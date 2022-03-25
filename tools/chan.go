@@ -17,7 +17,6 @@ type Storage interface {
 	HasMore(ctx context.Context) bool
 	SaveMany(messages ...any) (err error)
 	PullByLimit(ctx context.Context, i int) (messages []any, err error)
-	OnDataRead(messages ...any)
 }
 
 //NewMemQueue 创建队列
@@ -70,7 +69,6 @@ func (m MemQueue) Pull() (msg any, err error) {
 			if !ok {
 				return nil, errors.New("queue closed")
 			} else {
-				m.storage.OnDataRead(msg)
 				return msg, nil
 			}
 		default:
@@ -82,7 +80,7 @@ func (m MemQueue) Pull() (msg any, err error) {
 
 //Out 以channel的形式获取数据
 func (m MemQueue) Out() chan any {
-	c := make(chan any)
+	var c = make(chan any)
 	go func() {
 		for {
 			msg, err := m.Pull()

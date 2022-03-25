@@ -3,6 +3,7 @@ package tcp
 import (
 	"context"
 	"fmt"
+	"log"
 	"net"
 )
 
@@ -48,14 +49,17 @@ func (s *Server) Start() (err error) {
 		err = fmt.Errorf("start tcp server failed: %w", err)
 		return
 	}
+	defer func() {
+		_ = s.tcpListener.Close()
+	}()
 
-	var connChan chan net.Conn
+	connChan := make(chan net.Conn)
 	go func(connChan chan<- net.Conn) {
 		for {
-			var conn net.Conn
-			conn, err = s.tcpListener.Accept()
+			conn, err := s.tcpListener.Accept()
 			if err != nil {
-				err = fmt.Errorf("tcp server stoped: %w", err)
+				log.Printf("logger: tcp.server, msg: tcp server stoped, error: %s\n", err.Error())
+				//err = fmt.Errorf("tcp server stoped: %w", err)
 				close(connChan)
 				break
 			}
