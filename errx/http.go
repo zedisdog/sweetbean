@@ -33,3 +33,24 @@ func NewHttpErrorBadRequest(msg string) error {
 		http.StatusBadRequest,
 	)
 }
+
+func NewHttpErrorForbidden(msg string) error {
+	return WrapByHttpError(
+		New(msg, 1),
+		http.StatusForbidden,
+	)
+}
+
+func NewHttpErrorConflict(msg string) error {
+	return WrapByHttpError(
+		New(msg, 1),
+		http.StatusConflict,
+	)
+}
+
+func NewHttpErrorTeapot(msg string) error {
+	return WrapByHttpError(
+		New(msg, 1),
+		http.StatusTeapot,
+	)
+}
