@@ -13,6 +13,17 @@ func WrapByHttpError(err error, code int, detail ...map[string]string) error {
 	return e
 }
 
+func NewHttpError(code int, msg string, detail ...map[string]string) error {
+	e := &HttpError{
+		Code:  code,
+		error: New(msg, 1),
+	}
+	if detail != nil && len(detail) > 0 {
+		e.Detail = detail[0]
+	}
+	return e
+}
+
 type HttpError struct {
 	Code int
 	error
