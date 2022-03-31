@@ -8,7 +8,6 @@ import (
 func NewDelayValue(initValue interface{}, duration time.Duration) *DelayValue {
 	return &DelayValue{
 		currentValue: initValue,
-		lastValue:    initValue,
 		time:         time.Now(),
 		duration:     duration,
 	}
@@ -16,9 +15,8 @@ func NewDelayValue(initValue interface{}, duration time.Duration) *DelayValue {
 
 //DelayValue 延迟duration改变值
 type DelayValue struct {
-	currentValue interface{}   //当前
+	currentValue interface{}   //当前值
 	time         time.Time     //值变更时间
-	lastValue    interface{}   //值
 	duration     time.Duration //持续观察时间
 	lock         sync.RWMutex
 	recently     bool //是否刚改变
@@ -42,15 +40,15 @@ func (t *DelayValue) Lock(state interface{}, duration time.Duration) {
 func (t *DelayValue) ThisTime(state interface{}) {
 	t.lock.Lock()
 	defer t.lock.Unlock()
-	if state != t.lastValue {
+	if state != t.currentValue {
 		t.time = time.Now()
-		t.lastValue = state
+		t.currentValue = state
 	} else {
 		if t.time.Add(t.duration).Before(time.Now()) {
 			t.currentValue = state
 			t.time = time.Now()
 
-			//如果锁定就不变改变状态
+			//没锁定才改变状态
 			if t.lockValue == nil || t.lockAt.Add(t.lockDuration).Before(time.Now()) {
 				t.lockValue = nil
 				t.recently = true
@@ -68,8 +66,9 @@ func (t *DelayValue) Current() interface{} {
 	//判断锁定状态,如果有就返回锁定的值
 	if t.lockValue != nil && t.lockAt.Add(t.lockDuration).After(time.Now()) {
 		return t.lockValue
+	} else {
+		t.lockValue = nil
 	}
-	t.lockValue = nil
 
 	return t.currentValue
 }
