@@ -10,8 +10,16 @@ import (
 
 type StdServerSet func(*http.Server)
 
+//Deprecated: Use NewServer instead.
 func NewServerUseGin(addr string, routers *gin.Engine, middlewares ...gin.HandlerFunc) *ServerUseGin {
 	routers.Use(middlewares...)
+	return &ServerUseGin{
+		Routers: routers,
+		addr:    addr,
+	}
+}
+
+func NewServer(addr string, routers *gin.Engine) *ServerUseGin {
 	return &ServerUseGin{
 		Routers: routers,
 		addr:    addr,
