@@ -11,35 +11,32 @@ import (
 //		dest      point of dest object
 //		notCopyZero  if copy zero field too
 func CopyFields(src interface{}, dest interface{}, notCopyZero ...bool) error {
-	var (
-		sValue reflect.Value
-		dValue reflect.Value
-		dType  reflect.Type
-	)
 
 	// dest必须为指针
-	dType = reflect.TypeOf(dest)
-	if dType.Kind() != reflect.Ptr {
+	destType := reflect.TypeOf(dest)
+	if destType.Kind() != reflect.Ptr {
 		return errx.New("need dest ptr")
 	} else {
-		dType = dType.Elem()
+		destType = destType.Elem()
 	}
 
 	// 取src的value, 如果是指针就避开指针
-	sValue = reflect.ValueOf(src)
-	if sValue.Kind() == reflect.Ptr {
-		sValue = sValue.Elem()
+	srcValue := reflect.ValueOf(src)
+	if srcValue.Kind() == reflect.Ptr {
+		srcValue = srcValue.Elem()
 	}
 
-	dValue = reflect.ValueOf(dest).Elem()
-	for i := 0; i < dType.NumField(); i++ {
-		dTypeField := dType.Field(i)
-		sValueField := sValue.FieldByName(dTypeField.Name)
-		if !sValueField.IsValid() || (len(notCopyZero) > 0 && notCopyZero[0] && sValueField.IsZero()) {
+	destValue := reflect.ValueOf(dest).Elem()
+	for i := 0; i < destType.NumField(); i++ {
+		destTypeField := destType.Field(i)
+		srcValueField := srcValue.FieldByName(destTypeField.Name)
+		destValueField := destValue.Field(i)
+		if !srcValueField.IsValid() || //判断同名
+			(len(notCopyZero) > 0 && notCopyZero[0] && srcValueField.IsZero()) || //判断是否要复制零值 不要并且是零值就跳过
+			srcValueField.Kind() != destValueField.Kind() { //判断同类型
 			continue
 		}
-		dValueField := dValue.Field(i)
-		dValueField.Set(sValueField)
+		destValueField.Set(srcValueField)
 	}
 
 	return nil
