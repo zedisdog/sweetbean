@@ -19,27 +19,38 @@ type Storage interface {
 	PullByLimit(ctx context.Context, i int) (messages []any, err error)
 }
 
+func WithLoadDuration(d time.Duration) func(*MemQueue) {
+	return func(queue *MemQueue) {
+		queue.loadDuration = d
+	}
+}
+
 //NewMemQueue 创建队列
 //  ctx: 将会在调用 Storage.HasMore 和 Storage.PullByLimit 时原样返回，可用来传递数据
 //  storage: 实现了 Storage 接口的存储对象
 //  size: chan大小
-func NewMemQueue(ctx context.Context, storage Storage, size int) *MemQueue {
-	return &MemQueue{
+func NewMemQueue(ctx context.Context, storage Storage, size int, setters ...func(*MemQueue)) *MemQueue {
+	queue := &MemQueue{
 		memQueue: make(chan any, size),
 		storage:  storage,
 		ctx:      ctx,
 		running:  atomic.NewBool(true),
 		size:     size,
 	}
+	for _, set := range setters {
+		set(queue)
+	}
+	return queue
 }
 
 //MemQueue 简易内存队列，数据先通过缓冲chan存在内存中，当chan存满后通过 Storage 存入任何持久化存储中
 type MemQueue struct {
-	memQueue chan interface{}
-	storage  Storage
-	ctx      context.Context
-	running  *atomic.Bool
-	size     int
+	memQueue     chan interface{}
+	storage      Storage
+	ctx          context.Context
+	running      *atomic.Bool
+	size         int
+	loadDuration time.Duration //读取存储的间隔时间
 }
 
 func (m MemQueue) Put(msg any) (err error) {
@@ -73,7 +84,7 @@ func (m MemQueue) Pull() (msg any, err error) {
 			}
 		default:
 			_ = m.replenish()
-			time.Sleep(1 * time.Second)
+			time.Sleep(m.loadDuration)
 		}
 	}
 }
