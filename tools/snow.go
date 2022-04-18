@@ -27,7 +27,7 @@ func WithCheckMachineIDFunc(f func(uint16) bool) func(*sonyflake.Settings) {
 	}
 }
 
-//Deprecated: will not hold the instance of snowflake.
+//Deprecated: use package github.com/zedisdog/sweetbean/tools/snowflake instead
 func GetSnow(setters ...func(*sonyflake.Settings)) *sonyflake.Sonyflake {
 	setting := sonyflake.Settings{}
 	for _, setter := range setters {
