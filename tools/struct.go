@@ -41,3 +41,38 @@ func CopyFields(src interface{}, dest interface{}, notCopyZero ...bool) error {
 
 	return nil
 }
+
+func CopyStructFields(src interface{}, dest interface{}) (dirty bool, err error) {
+
+	// dest必须为指针
+	destType := reflect.TypeOf(dest)
+	if destType.Kind() != reflect.Ptr {
+		err = errx.New("need dest ptr")
+		return
+	} else {
+		destType = destType.Elem()
+	}
+
+	// 取src的value, 如果是指针就避开指针
+	srcValue := reflect.ValueOf(src)
+	if srcValue.Kind() == reflect.Ptr {
+		srcValue = srcValue.Elem()
+	}
+
+	destValue := reflect.ValueOf(dest).Elem()
+	for i := 0; i < destType.NumField(); i++ {
+		destTypeField := destType.Field(i)
+		srcValueField := srcValue.FieldByName(destTypeField.Name)
+		destValueField := destValue.Field(i)
+		if !srcValueField.IsValid() || //判断同名
+			srcValueField.Kind() != destValueField.Kind() { //判断同类型
+			continue
+		}
+		if !reflect.DeepEqual(destValueField.Interface(), srcValueField.Interface()) {
+			dirty = true
+		}
+		destValueField.Set(srcValueField)
+	}
+
+	return
+}
