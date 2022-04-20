@@ -12,22 +12,22 @@ import (
 
 func NewLocal(path *tools.Path) *LocalDriver {
 	return &LocalDriver{
-		path: path,
+		root: path,
 		perm: 0755,
 	}
 }
 
 type LocalDriver struct {
-	path *tools.Path
+	root *tools.Path
 	perm fs.FileMode
 }
 
 func (l LocalDriver) Put(path string, data []byte) (err error) {
-	err = os.MkdirAll(l.path.Dir(path), l.perm)
+	err = os.MkdirAll(l.root.Dir(path), l.perm)
 	if err != nil {
 		return
 	}
-	f, err := os.OpenFile(l.path.Concat(path), os.O_TRUNC|os.O_CREATE|os.O_WRONLY, l.perm)
+	f, err := os.OpenFile(l.root.Concat(path), os.O_TRUNC|os.O_CREATE|os.O_WRONLY, l.perm)
 	if err != nil {
 		return
 	}
@@ -39,7 +39,7 @@ func (l LocalDriver) Put(path string, data []byte) (err error) {
 }
 
 func (l LocalDriver) Get(path string) (data []byte, err error) {
-	f, err := os.Open(l.path.Concat(path))
+	f, err := os.Open(l.root.Concat(path))
 	if err != nil {
 		return
 	}
@@ -51,7 +51,7 @@ func (l LocalDriver) Get(path string) (data []byte, err error) {
 }
 
 func (l LocalDriver) Remove(path string) (err error) {
-	_, err = os.Stat(l.path.Concat(path))
+	_, err = os.Stat(l.root.Concat(path))
 	if err != nil {
 		if errors.Is(err, os.ErrNotExist) {
 			return nil
@@ -59,16 +59,16 @@ func (l LocalDriver) Remove(path string) (err error) {
 		return
 	}
 
-	err = os.Remove(l.path.Concat(path))
+	err = os.Remove(l.root.Concat(path))
 	return
 }
 
 func (l LocalDriver) Path(path string) string {
-	return l.path.Concat(path)
+	return l.root.Concat(path)
 }
 
 func (l LocalDriver) MimeType(path string) string {
-	fp, err := os.Open(l.path.Concat(path))
+	fp, err := os.Open(l.root.Concat(path))
 	if err != nil {
 		return ""
 	}
