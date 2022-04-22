@@ -38,17 +38,10 @@ func ParseToken(token string, key []byte, claims jwt.Claims) (jwt.Claims, error)
 }
 
 // Parse token and fill claims
-func Parse(token string, key []byte, claims jwt.Claims) (err error) {
-	t, err := jwt.ParseWithClaims(token, claims, func(token *jwt.Token) (interface{}, error) {
+func Parse(token string, key []byte) (t *jwt.Token, err error) {
+	t, err = jwt.Parse(token, func(token *jwt.Token) (interface{}, error) {
 		return key, nil
 	})
-	if err != nil {
-		return
-	}
-	if !t.Valid {
-		err = TokenIsInvalid
-		return
-	}
 
 	return
 }

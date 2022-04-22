@@ -42,7 +42,7 @@ func CopyFields(src interface{}, dest interface{}, notCopyZero ...bool) error {
 	return nil
 }
 
-func CopyStructFields(src interface{}, dest interface{}) (dirty bool, err error) {
+func CopyStructFields(src interface{}, dest interface{}, copyZero ...bool) (dirty bool, err error) {
 
 	// dest必须为指针
 	destType := reflect.TypeOf(dest)
@@ -65,6 +65,7 @@ func CopyStructFields(src interface{}, dest interface{}) (dirty bool, err error)
 		srcValueField := srcValue.FieldByName(destTypeField.Name)
 		destValueField := destValue.Field(i)
 		if !srcValueField.IsValid() || //判断同名
+			((len(copyZero) <= 0 || !copyZero[0]) && srcValueField.IsZero()) || //判断是否要复制零值 不要并且是零值就跳过
 			srcValueField.Kind() != destValueField.Kind() { //判断同类型
 			continue
 		}
