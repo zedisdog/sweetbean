@@ -1,33 +1,34 @@
 package tools
 
 import (
+	"testing"
+
 	"github.com/golang-jwt/jwt/v4"
 	"github.com/uniplaces/carbon"
-	"testing"
 )
 
 func TestExpire(t *testing.T) {
 	key := []byte("123")
-	claims := jwt.StandardClaims{
-		ExpiresAt: carbon.Now().AddMinute().Unix(),
+	claims := jwt.RegisteredClaims{
+		ExpiresAt: &jwt.NumericDate{Time: carbon.Now().AddMinute().Time},
 	}
 	token, err := GenerateToken(key, claims)
 	if err != nil {
 		t.Fatal(err)
 	}
-	err = Parse(token, key, &claims)
+	_, err = Parse(token, key)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	claims = jwt.StandardClaims{
-		ExpiresAt: carbon.Now().SubSecond().Unix(),
+	claims = jwt.RegisteredClaims{
+		ExpiresAt: &jwt.NumericDate{Time: carbon.Now().SubSecond().Time},
 	}
 	token, err = GenerateToken(key, claims)
 	if err != nil {
 		t.Fatal(err)
 	}
-	err = Parse(token, key, &claims)
+	_, err = Parse(token, key)
 	if err == nil {
 		t.Fatal("token is still active")
 	}
