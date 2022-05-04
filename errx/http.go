@@ -18,7 +18,7 @@ func NewHttpError(code int, msg string, detail ...map[string]string) error {
 		Code:  code,
 		error: New(msg, 1),
 	}
-	if detail != nil && len(detail) > 0 {
+	if len(detail) > 0 {
 		e.Detail = detail[0]
 	}
 	return e

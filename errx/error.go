@@ -12,8 +12,17 @@ type Error struct {
 	error
 }
 
-func (e Error) Error() string {
-	return fmt.Sprintf("%s:%d %s", e.File, e.Line, e.error.Error())
+func (e Error) Format(s fmt.State, c rune) {
+	switch c {
+	case 'v':
+		switch {
+		case s.Flag('+'):
+			fmt.Printf("%s:%d %s\n", e.File, e.Line, e.error.Error())
+		default:
+			println(e.error.Error())
+		}
+	}
+	println(e.error.Error())
 }
 
 func New(msg string, delta ...int) error {

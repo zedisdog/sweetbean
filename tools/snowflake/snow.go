@@ -17,3 +17,7 @@ func Init(setters ...func(settings *sonyflake.Settings)) {
 	}
 	deft = sonyflake.NewSonyflake(setting)
 }
+
+func Instance() *sonyflake.Sonyflake {
+	return deft
+}

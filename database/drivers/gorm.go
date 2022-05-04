@@ -4,6 +4,7 @@ import (
 	"gorm.io/gorm"
 )
 
+//Deprecated:
 func NewGorm(dialector gorm.Dialector, config *gorm.Config) (*gorm.DB, error) {
 	return gorm.Open(dialector, config)
 }
