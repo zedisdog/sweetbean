@@ -12,7 +12,8 @@ import (
 type Condition = []interface{}
 type Conditions = []Condition
 
-func ParseConditionGorm(query *gorm.DB, conditions Conditions) (err error) {
+func ParseConditionGorm(q *gorm.DB, conditions Conditions) (query *gorm.DB, err error) {
+	query = q
 	for _, condition := range conditions {
 		switch len(condition) {
 		case 0, 1:
