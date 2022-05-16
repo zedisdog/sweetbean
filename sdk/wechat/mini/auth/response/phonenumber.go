@@ -1,0 +1,20 @@
+package response
+
+import "github.com/zedisdog/sweetbean/sdk/wechat/mini/common"
+
+type WaterMark struct {
+	AppID     string `json:"appid"`
+	Timestamp string `json:"timestamp"`
+}
+
+type PhoneInfo struct {
+	PhoneNumber     string    `json:"phoneNumber"`
+	PurePhoneNumber string    `json:"purePhoneNumber"`
+	CountryCode     string    `json:"countryCode"`
+	Watermark       WaterMark `json:"watermark"`
+}
+
+type PhoneNumber struct {
+	common.ErrorResponse
+	PhoneInfo PhoneInfo `json:"phone_info"`
+}
