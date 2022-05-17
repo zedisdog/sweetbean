@@ -3,27 +3,32 @@ package http
 import (
 	"bytes"
 	"encoding/json"
-	"github.com/zedisdog/sweetbean/errx"
+	"fmt"
 	"io"
 	"net/http"
 	urlpkg "net/url"
+
+	"github.com/zedisdog/sweetbean/errx"
 )
 
-func buildBody(data interface{}) (body io.ReadCloser, err error) {
-	switch data.(type) {
+func buildBody(data interface{}) (body io.ReadCloser, length int64, err error) {
+	switch d := data.(type) {
 	case []byte:
-		body = io.NopCloser(bytes.NewBuffer(data.([]byte)))
+		body = io.NopCloser(bytes.NewBuffer(d))
+		length = int64(len(d))
 	case string:
-		body = io.NopCloser(bytes.NewBufferString(data.(string)))
+		body = io.NopCloser(bytes.NewBufferString(d))
+		length = int64(len(d))
 	default:
 		if data == nil {
 			return
 		}
 		tmp, err := json.Marshal(data)
 		if err != nil {
-			return nil, errx.Wrap(err, "covert interface{} to json bytes error")
+			return nil, 0, errx.Wrap(err, "covert interface{} to json bytes error")
 		}
 		body = io.NopCloser(bytes.NewBuffer(tmp))
+		length = int64(len(tmp))
 	}
 	return
 }
@@ -43,16 +48,17 @@ func buildRequest(method string, url string, data interface{}, setters ...Reques
 		return
 	}
 
-	body, err := buildBody(data)
+	body, length, err := buildBody(data)
 	if err != nil {
 		err = errx.Wrap(err, "build body error")
 		return
 	}
 
 	request = &http.Request{
-		Method: method,
-		Body:   body,
-		URL:    u,
+		Method:        method,
+		Body:          body,
+		URL:           u,
+		ContentLength: length,
 	}
 
 	for _, setter := range setters {
@@ -117,8 +123,8 @@ func GetWithHeader(url string, headers map[string][]string) (response []byte, er
 }
 
 func Request(request *http.Request) (response []byte, err error) {
-	resp, e := http.DefaultClient.Do(request)
-	if e != nil {
+	resp, err := http.DefaultClient.Do(request)
+	if err != nil {
 		err = errx.NewHttpError(0, err.Error())
 		return
 	}
@@ -130,8 +136,8 @@ func Request(request *http.Request) (response []byte, err error) {
 		return
 	}
 
-	response, e = io.ReadAll(resp.Body)
-	if e != nil {
+	response, err = io.ReadAll(resp.Body)
+	if err != nil {
 		err = errx.NewHttpError(0, err.Error())
 		return
 	}

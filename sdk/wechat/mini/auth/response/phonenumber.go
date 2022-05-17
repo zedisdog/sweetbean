@@ -4,7 +4,7 @@ import "github.com/zedisdog/sweetbean/sdk/wechat/mini/common"
 
 type WaterMark struct {
 	AppID     string `json:"appid"`
-	Timestamp string `json:"timestamp"`
+	Timestamp int64  `json:"timestamp"`
 }
 
 type PhoneInfo struct {
