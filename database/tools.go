@@ -22,7 +22,11 @@ func ParseConditionGorm(q *gorm.DB, conditions Conditions) (query *gorm.DB, err 
 		case 2:
 			v := reflect.ValueOf(condition[1])
 			if v.Kind() == reflect.Slice {
-				query = query.Where(fmt.Sprintf("%s IN ?", condition[0]), condition[1])
+				if s, ok := condition[0].(string); ok && (strings.Contains(strings.ToLower(s), "and") || strings.Contains(strings.ToLower(s), "or")) {
+					query = query.Where(s, condition[1].([]interface{})...)
+				} else {
+					query = query.Where(fmt.Sprintf("%s IN ?", condition[0]), condition[1])
+				}
 			} else {
 				if s, ok := condition[1].(string); ok && strings.HasPrefix(strings.ToLower(s), "is") {
 					query = query.Where(fmt.Sprintf("%s %s", condition[0], condition[1]))
