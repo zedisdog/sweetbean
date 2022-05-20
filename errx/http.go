@@ -65,3 +65,10 @@ func NewHttpErrorTeapot(msg string) error {
 		http.StatusTeapot,
 	)
 }
+
+func NewHttpErrorUnauthorized(msg string) error {
+	return WrapByHttpError(
+		New(msg, 1),
+		http.StatusUnauthorized,
+	)
+}

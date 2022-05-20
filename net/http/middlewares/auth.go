@@ -1,9 +1,10 @@
 package middlewares
 
 import (
-	"github.com/zedisdog/sweetbean/tools"
 	"net/http"
 	"strings"
+
+	"github.com/zedisdog/sweetbean/tools"
 
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v4"
