@@ -1,20 +1,23 @@
 package middlewares
 
 import (
-	"github.com/gin-gonic/gin"
 	"net/http"
+
+	"github.com/gin-gonic/gin"
 )
 
 type CheckRole interface {
 	IsRole(id interface{}, roleName string) bool
 }
 
-func GenRoleMiddleware(svc CheckRole, roleName string) func(*gin.Context) {
+func GenRoleMiddleware(svc CheckRole, roleNames ...string) func(*gin.Context) {
 	return func(c *gin.Context) {
-		if !svc.IsRole(c.MustGet("id"), roleName) {
-			c.AbortWithStatusJSON(http.StatusForbidden, map[string]string{"message": "未授权的访问"})
-			return
+		for _, roleName := range roleNames {
+			if svc.IsRole(c.MustGet("id"), roleName) {
+				c.Next()
+				return
+			}
 		}
-		c.Next()
+		c.AbortWithStatusJSON(http.StatusForbidden, map[string]string{"message": "未授权的访问"})
 	}
 }
