@@ -32,12 +32,13 @@ func WithLoadDuration(d time.Duration) func(*MemQueue) {
 //  size: chan大小
 func NewMemQueue(ctx context.Context, storage Storage, size int, setters ...func(*MemQueue)) *MemQueue {
 	queue := &MemQueue{
-		memQueue: make(chan interface{}, size),
-		storage:  storage,
-		ctx:      ctx,
-		running:  atomic.NewBool(true),
-		size:     size,
-		out:      make(chan interface{}),
+		memQueue:     make(chan interface{}, size),
+		storage:      storage,
+		ctx:          ctx,
+		running:      atomic.NewBool(true),
+		size:         size,
+		out:          make(chan interface{}),
+		loadDuration: 500 * time.Millisecond,
 	}
 	for _, set := range setters {
 		set(queue)
