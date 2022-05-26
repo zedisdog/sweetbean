@@ -4,9 +4,10 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"go.uber.org/atomic"
 	"log"
 	"time"
+
+	"go.uber.org/atomic"
 )
 
 var (
@@ -15,8 +16,8 @@ var (
 
 type Storage interface {
 	HasMore(ctx context.Context) bool
-	SaveMany(messages ...any) (err error)
-	PullByLimit(ctx context.Context, i int) (messages []any, err error)
+	SaveMany(messages ...interface{}) (err error)
+	PullByLimit(ctx context.Context, i int) (messages []interface{}, err error)
 }
 
 func WithLoadDuration(d time.Duration) func(*MemQueue) {
@@ -31,11 +32,12 @@ func WithLoadDuration(d time.Duration) func(*MemQueue) {
 //  size: chan大小
 func NewMemQueue(ctx context.Context, storage Storage, size int, setters ...func(*MemQueue)) *MemQueue {
 	queue := &MemQueue{
-		memQueue: make(chan any, size),
+		memQueue: make(chan interface{}, size),
 		storage:  storage,
 		ctx:      ctx,
 		running:  atomic.NewBool(true),
 		size:     size,
+		out:      make(chan interface{}),
 	}
 	for _, set := range setters {
 		set(queue)
@@ -51,9 +53,10 @@ type MemQueue struct {
 	running      *atomic.Bool
 	size         int
 	loadDuration time.Duration //读取存储的间隔时间
+	out          chan interface{}
 }
 
-func (m MemQueue) Put(msg any) (err error) {
+func (m MemQueue) Put(msg interface{}) (err error) {
 	if !m.running.Load() {
 		err = ErrClosed
 		return
@@ -69,7 +72,7 @@ func (m MemQueue) Put(msg any) (err error) {
 }
 
 //Pull 从通道中获取数据
-func (m MemQueue) Pull() (msg any, err error) {
+func (m MemQueue) Pull() (msg interface{}, err error) {
 	if !m.running.Load() {
 		err = ErrClosed
 		return
@@ -90,26 +93,25 @@ func (m MemQueue) Pull() (msg any, err error) {
 }
 
 //Out 以channel的形式获取数据
-func (m MemQueue) Out() chan any {
-	var c = make(chan any)
+func (m MemQueue) Out() chan interface{} {
 	go func() {
 		for {
 			msg, err := m.Pull()
 			if err != nil {
 				log.Printf("message: pull failed, logger: sweetbean.tools.MemQueue, error: %s\n", err.Error())
-				close(c)
+				close(m.out)
 				break
 			}
-			c <- msg
+			m.out <- msg
 		}
 	}()
-	return c
+	return m.out
 }
 
 func (m MemQueue) replenish() (err error) {
 	need := m.size - len(m.memQueue)
 	if m.storage.HasMore(m.ctx) && need > 0 {
-		var msgs []any
+		var msgs []interface{}
 		msgs, err = m.storage.PullByLimit(m.ctx, need)
 		if err != nil {
 			err = fmt.Errorf("read message from storage failed: %w", err)
@@ -125,7 +127,7 @@ func (m MemQueue) replenish() (err error) {
 func (m *MemQueue) Close() {
 	m.running.Store(false)
 	close(m.memQueue)
-	var msgs []any
+	var msgs []interface{}
 	for m := range m.memQueue {
 		msgs = append(msgs, m)
 	}
