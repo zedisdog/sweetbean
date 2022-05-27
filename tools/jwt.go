@@ -2,11 +2,14 @@ package tools
 
 import (
 	"errors"
+
 	"github.com/golang-jwt/jwt/v4"
 )
 
 var (
-	TokenIsInvalid = errors.New("token is invalid")
+	//Deprecate: use ErrTokenIsInvalid instead.
+	TokenIsInvalid    = ErrTokenIsInvalid
+	ErrTokenIsInvalid = errors.New("token is invalid")
 )
 
 func GenerateToken(key []byte, claims jwt.Claims) (string, error) {

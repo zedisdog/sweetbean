@@ -2,7 +2,6 @@ package tools
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"strings"
 )
@@ -32,7 +31,7 @@ func (c Json) Get(name string) (value interface{}, err error) {
 			value, ok = value.(map[string]interface{})[n]
 		}
 		if !ok {
-			err = errors.New(fmt.Sprintf("value of key <%s> not found", n))
+			err = fmt.Errorf("value of key <%s> not found", n)
 			return
 		}
 	}
