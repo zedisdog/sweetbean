@@ -10,6 +10,10 @@ type item struct {
 	Expire int64
 }
 
+func NewCache() *cache {
+	return &cache{}
+}
+
 type cache struct {
 	sync.Map
 }
