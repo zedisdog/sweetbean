@@ -22,3 +22,7 @@ type DriverHasBase64 interface {
 type DriverCanGetSize interface {
 	Size(path string) (int, error)
 }
+
+type DriverHasUrl interface {
+	Url(path string) string
+}

@@ -3,23 +3,41 @@ package drivers
 import (
 	"encoding/base64"
 	"errors"
-	"github.com/h2non/filetype"
-	"github.com/zedisdog/sweetbean/tools"
+	"fmt"
 	"io"
 	"io/fs"
 	"os"
+	"strings"
+
+	"github.com/h2non/filetype"
+	"github.com/zedisdog/sweetbean/storage"
+	"github.com/zedisdog/sweetbean/tools"
 )
 
-func NewLocal(path *tools.Path) *LocalDriver {
+func WithBaseUrl(baseUrl string) func(*LocalDriver) {
+	return func(ld *LocalDriver) {
+		ld.baseUrl = strings.TrimRight(baseUrl, "/")
+	}
+}
+
+func NewLocal(path *tools.Path, options ...func(*LocalDriver)) *LocalDriver {
 	return &LocalDriver{
 		root: path,
 		perm: 0755,
 	}
 }
 
+var _ storage.Driver = (*LocalDriver)(nil)
+var _ storage.DriverHasMime = (*LocalDriver)(nil)
+var _ storage.DriverHasPath = (*LocalDriver)(nil)
+var _ storage.DriverHasBase64 = (*LocalDriver)(nil)
+var _ storage.DriverCanGetSize = (*LocalDriver)(nil)
+var _ storage.DriverHasUrl = (*LocalDriver)(nil)
+
 type LocalDriver struct {
-	root *tools.Path
-	perm fs.FileMode
+	root    *tools.Path
+	perm    fs.FileMode
+	baseUrl string
 }
 
 func (l LocalDriver) Put(path string, data []byte) (err error) {
@@ -103,4 +121,8 @@ func (l LocalDriver) Size(path string) (size int, err error) {
 	}
 	size = len(d)
 	return
+}
+
+func (l LocalDriver) Url(path string) string {
+	return fmt.Sprintf("%s/%s", l.baseUrl, path)
 }

@@ -2,13 +2,14 @@ package storage
 
 import (
 	"fmt"
-	"github.com/gofrs/uuid"
-	"github.com/zedisdog/sweetbean/errx"
 	"io"
 	"mime/multipart"
 	"os"
 	"path/filepath"
 	"strings"
+
+	"github.com/gofrs/uuid"
+	"github.com/zedisdog/sweetbean/errx"
 )
 
 func NewStorage(driver Driver) *Storage {
@@ -105,4 +106,11 @@ func (s Storage) Size(path string) (int, error) {
 		return ss.Size(path)
 	}
 	return 0, errx.New("driver is not implement interface <DriverCanGetSize>", 1)
+}
+
+func (s Storage) Url(path string) (string, error) {
+	if ss, ok := interface{}(s.driver).(DriverHasUrl); ok {
+		return ss.Url(path), nil
+	}
+	return "", errx.New("driver is not implement interface <DriverHasUrl>", 1)
 }
