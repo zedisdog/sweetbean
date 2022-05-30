@@ -11,6 +11,7 @@ type CommonField struct {
 	UpdatedAt int64  `json:"updated_at" gorm:"autoUpdateTime"`
 }
 
+//Deprecated:
 func (a *CommonField) BeforeCreate(tx *gorm.DB) (err error) {
 	if a.ID == 0 {
 		a.ID, err = snowflake.NextID()
