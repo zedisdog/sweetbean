@@ -21,10 +21,14 @@ func WithBaseUrl(baseUrl string) func(*LocalDriver) {
 }
 
 func NewLocal(path *tools.Path, options ...func(*LocalDriver)) *LocalDriver {
-	return &LocalDriver{
+	driver := &LocalDriver{
 		root: path,
 		perm: 0755,
 	}
+	for _, set := range options {
+		set(driver)
+	}
+	return driver
 }
 
 var _ storage.Driver = (*LocalDriver)(nil)
