@@ -22,21 +22,47 @@ type Storage struct {
 	driver Driver
 }
 
+func (s Storage) randFileName(ext string) (name string, err error) {
+	id, err := uuid.NewV4()
+	if err != nil {
+		return
+	}
+	if strings.HasPrefix(ext, ".") {
+		return fmt.Sprintf("%s%s", id.String(), ext), nil
+	} else {
+		return fmt.Sprintf("%s.%s", id.String(), ext), nil
+	}
+}
+
 //PutFileQuick is similar than PutFile, but don't set filename.
 func (s Storage) PutFileQuick(file *multipart.FileHeader, directory string) (path string, err error) {
-	id, err := uuid.NewV4()
+	fileName, err := s.randFileName(filepath.Ext(file.Filename))
 	if err != nil {
 		return
 	}
 	//path = directory/xxxx.jpg
 	path = fmt.Sprintf(
-		"%s%s%s%s",
+		"%s%s%s",
 		strings.Trim(directory, "\\/"),
 		string(os.PathSeparator),
-		id.String(),
-		filepath.Ext(file.Filename),
+		fileName,
 	)
 	err = s.PutFile(path, file)
+	return
+}
+
+func (s Storage) PutFileBytesQuick(data []byte, ext string, dir string) (path string, err error) {
+	fileName, err := s.randFileName(ext)
+	if err != nil {
+		return
+	}
+	path = fmt.Sprintf(
+		"%s%s%s",
+		strings.Trim(dir, "\\/"),
+		string(os.PathSeparator),
+		fileName,
+	)
+	err = s.Put(path, data)
 	return
 }
 
