@@ -12,6 +12,24 @@ import (
 	"github.com/zedisdog/sweetbean/errx"
 )
 
+//go:generate mockgen -destination=./test/storage.go -package=test github.com/zedisdog/sweetbean/storage IStorage
+
+var _ IStorage = (*Storage)(nil)
+
+type IStorage interface {
+	Driver
+	PutString(path string, data string) error
+	GetString(path string) (data string, err error)
+	PutFile(path string, file *multipart.FileHeader) (err error)
+	MimeType(path string) (string, error)
+	Path(path string) (string, error)
+	Base64(path string) (string, error)
+	Size(path string) (int, error)
+	Url(path string) (string, error)
+	PutFileQuick(file *multipart.FileHeader, directory string) (path string, err error)
+	PutFileBytesQuick(data []byte, ext string, dir string) (path string, err error)
+}
+
 func NewStorage(driver Driver) *Storage {
 	return &Storage{
 		driver: driver,
