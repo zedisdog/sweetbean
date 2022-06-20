@@ -3,6 +3,7 @@ package qrcode
 import (
 	"encoding/json"
 	"fmt"
+	"strings"
 
 	"github.com/zedisdog/sweetbean/net/http"
 	"github.com/zedisdog/sweetbean/sdk/wechat/mini/auth"
@@ -26,8 +27,9 @@ type Color struct {
 }
 
 type QrCodeUnlimitedOptions struct {
+	Scene      string `json:"scene"`
 	Page       string `json:"page"`
-	CheckPath  bool   `json:"check_page"`
+	CheckPath  bool   `json:"check_path"`
 	EnvVersion string `json:"env_version"`
 	Width      int    `json:"width"`
 	AutoColor  bool   `json:"auto_color"`
@@ -39,10 +41,10 @@ type QrCode struct {
 	auth *auth.Auth
 }
 
-func (q QrCode) GetUnlimited(sence map[string]string, setters ...func(*QrCodeUnlimitedOptions)) (r response.QrCodeUnlimited, err error) {
+func (q QrCode) GetUnlimited(scene map[string]string, setters ...func(*QrCodeUnlimitedOptions)) (r response.QrCodeUnlimited, err error) {
 	options := QrCodeUnlimitedOptions{
-		Page:       "",
-		CheckPath:  true,
+		Page:       "pages/index/index",
+		CheckPath:  false,
 		EnvVersion: "release",
 		Width:      430,
 		AutoColor:  false,
@@ -60,6 +62,11 @@ func (q QrCode) GetUnlimited(sence map[string]string, setters ...func(*QrCodeUnl
 	if err != nil {
 		return
 	}
+	var s string
+	for key, value := range scene {
+		s += fmt.Sprintf("&%s=%s", key, value)
+	}
+	options.Scene = strings.TrimLeft(s, "&")
 	resp, err := http.PostJSON(fmt.Sprintf(qrCodeUnlimited, token), options)
 	if err != nil {
 		return
