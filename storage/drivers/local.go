@@ -128,5 +128,8 @@ func (l LocalDriver) Size(path string) (size int, err error) {
 }
 
 func (l LocalDriver) Url(path string) string {
+	if path == "" {
+		return ""
+	}
 	return fmt.Sprintf("%s/%s", l.baseUrl, path)
 }
