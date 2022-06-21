@@ -14,6 +14,14 @@ const (
 	qrCodeUnlimited = "https://api.weixin.qq.com/wxa/getwxacodeunlimit?access_token=%s"
 )
 
+type Env string
+
+const (
+	Release Env = "release"
+	Trial   Env = "trial"
+	Develop Env = "develop"
+)
+
 func NewQrCode(a *auth.Auth) *QrCode {
 	return &QrCode{
 		auth: a,
@@ -28,13 +36,53 @@ type Color struct {
 
 type QrCodeUnlimitedOptions struct {
 	Scene      string `json:"scene"`
-	Page       string `json:"page"`
+	Page       Env    `json:"page"`
 	CheckPath  bool   `json:"check_path"`
 	EnvVersion string `json:"env_version"`
 	Width      int    `json:"width"`
 	AutoColor  bool   `json:"auto_color"`
 	LineColor  Color  `json:"line_color"`
 	IsHyaline  bool   `json:"is_hyaline"`
+}
+
+func WithCheckPath(enabled bool) func(options *QrCodeUnlimitedOptions) {
+	return func(options *QrCodeUnlimitedOptions) {
+		options.CheckPath = enabled
+	}
+}
+
+func WithPage(path Env) func(options *QrCodeUnlimitedOptions) {
+	return func(options *QrCodeUnlimitedOptions) {
+		options.Page = path
+	}
+}
+
+func WithWidth(width int) func(options *QrCodeUnlimitedOptions) {
+	return func(options *QrCodeUnlimitedOptions) {
+		options.Width = width
+	}
+}
+
+func WithAutoColor(enabled bool) func(options *QrCodeUnlimitedOptions) {
+	return func(options *QrCodeUnlimitedOptions) {
+		options.AutoColor = enabled
+	}
+}
+
+func WithLineColor(color Color) func(options *QrCodeUnlimitedOptions) {
+	return func(options *QrCodeUnlimitedOptions) {
+		options.LineColor = color
+	}
+}
+
+func WithIsHyaline(enabled bool) func(options *QrCodeUnlimitedOptions) {
+	return func(options *QrCodeUnlimitedOptions) {
+		options.IsHyaline = enabled
+	}
+}
+
+func WithEnvVersion(env string) {
+
 }
 
 type QrCode struct {
@@ -44,7 +92,7 @@ type QrCode struct {
 func (q QrCode) GetUnlimited(scene map[string]string, setters ...func(*QrCodeUnlimitedOptions)) (r response.QrCodeUnlimited, err error) {
 	options := QrCodeUnlimitedOptions{
 		Page:       "pages/index/index",
-		CheckPath:  false,
+		CheckPath:  true,
 		EnvVersion: "release",
 		Width:      430,
 		AutoColor:  false,
