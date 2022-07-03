@@ -3,6 +3,8 @@ package tools
 import (
 	"sync"
 	"time"
+
+	"github.com/zedisdog/sweetbean/errx"
 )
 
 func NewDelayValue(initValue interface{}, duration time.Duration) *DelayValue {
@@ -10,6 +12,7 @@ func NewDelayValue(initValue interface{}, duration time.Duration) *DelayValue {
 		currentValue: initValue,
 		time:         time.Now(),
 		duration:     duration,
+		lockValue:    initValue,
 	}
 }
 
@@ -22,18 +25,34 @@ type DelayValue struct {
 	recently     bool //是否刚改变
 
 	//下面是锁定状态的设置
-	lockValue    interface{}   //锁定的值
-	lockDuration time.Duration //锁定时间
-	lockAt       time.Time     //锁定开始时间
+	lockValue   interface{} //锁定的值
+	valueLocked bool        //值是否被手动锁定
 }
 
 //Lock 锁定状态
-func (t *DelayValue) Lock(state interface{}, duration time.Duration) {
+func (t *DelayValue) Lock(state interface{}, duration time.Duration) error {
 	t.lock.Lock()
 	defer t.lock.Unlock()
+	if t.valueLocked {
+		return errx.New("value locked")
+	} else {
+		t.valueLocked = true
+	}
+	backDuration := t.duration
+
 	t.lockValue = state
-	t.lockDuration = duration
-	t.lockAt = time.Now()
+	t.currentValue = state
+	t.duration = duration
+	t.time = time.Now()
+
+	go func(t *DelayValue) {
+		t.lock.Lock()
+		defer t.lock.Unlock()
+		t.duration = backDuration
+		t.valueLocked = false
+	}(t)
+
+	return nil
 }
 
 // ThisTime 设置当前状态
@@ -45,12 +64,9 @@ func (t *DelayValue) ThisTime(state interface{}) {
 		t.currentValue = state
 	} else {
 		if t.time.Add(t.duration).Before(time.Now()) {
-			t.currentValue = state
 			t.time = time.Now()
-
-			//没锁定才改变状态
-			if t.lockValue == nil || t.lockAt.Add(t.lockDuration).Before(time.Now()) {
-				t.lockValue = nil
+			if t.currentValue != t.lockValue {
+				t.lockValue = state
 				t.recently = true
 			}
 		}
@@ -63,14 +79,7 @@ func (t *DelayValue) Current() interface{} {
 	defer t.lock.RUnlock()
 	t.recently = false
 
-	//判断锁定状态,如果有就返回锁定的值
-	if t.lockValue != nil && t.lockAt.Add(t.lockDuration).After(time.Now()) {
-		return t.lockValue
-	} else {
-		t.lockValue = nil
-	}
-
-	return t.currentValue
+	return t.lockValue
 }
 
 //CurrentBool 获取当前状态
