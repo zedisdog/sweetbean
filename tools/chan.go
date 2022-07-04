@@ -15,9 +15,9 @@ var (
 )
 
 type Storage interface {
-	HasMore(ctx context.Context) bool
+	HasMore() bool
 	SaveMany(messages ...interface{}) (err error)
-	PullByLimit(ctx context.Context, i int) (messages []interface{}, err error)
+	PullByLimit(i int) (messages []interface{}, err error)
 }
 
 func WithLoadDuration(d time.Duration) func(*MemQueue) {
@@ -60,7 +60,7 @@ func (m MemQueue) Put(ctx context.Context, msg interface{}) (err error) {
 		return
 	}
 
-	if m.storage.HasMore(ctx) || len(m.memQueue) >= m.size {
+	if m.storage.HasMore() || len(m.memQueue) >= m.size {
 		err = m.storage.SaveMany(msg)
 		return
 	}
@@ -70,15 +70,13 @@ func (m MemQueue) Put(ctx context.Context, msg interface{}) (err error) {
 }
 
 //Pull 从通道中获取数据
-func (m MemQueue) Pull(ctx context.Context) (msg interface{}, err error) {
+func (m MemQueue) Pull() (msg interface{}, err error) {
 	if !m.running.Load() {
 		err = ErrClosed
 		return
 	}
 	for {
 		select {
-		case <-ctx.Done():
-			return nil, errors.New("closed by ctx")
 		case msg, ok := <-m.memQueue:
 			if !ok {
 				return nil, errors.New("queue closed")
@@ -86,7 +84,7 @@ func (m MemQueue) Pull(ctx context.Context) (msg interface{}, err error) {
 				return msg, nil
 			}
 		default:
-			_ = m.replenish(ctx)
+			_ = m.replenish()
 			time.Sleep(m.loadDuration)
 		}
 	}
@@ -98,7 +96,7 @@ func (m MemQueue) Out() chan interface{} {
 		m.out = make(chan interface{})
 		go func() {
 			for {
-				msg, err := m.Pull(context.Background())
+				msg, err := m.Pull()
 				if err != nil {
 					log.Printf("message: pull failed, logger: sweetbean.tools.MemQueue, error: %s\n", err.Error())
 					close(m.out)
@@ -111,34 +109,11 @@ func (m MemQueue) Out() chan interface{} {
 	return m.out
 }
 
-//OutWithCtx 以channel形式返回数据, ctx用于传参和控制销毁, 每次生成新的channel
-func (m MemQueue) OutWithCtx(ctx context.Context) chan interface{} {
-	c := make(chan interface{})
-	go func() {
-		for {
-			select {
-			case <-ctx.Done():
-				close(c)
-				return
-			default:
-				msg, err := m.Pull(ctx)
-				if err != nil {
-					log.Printf("message: pull failed, logger: sweetbean.tools.MemQueue, error: %s\n", err.Error())
-					close(c)
-					return
-				}
-				c <- msg
-			}
-		}
-	}()
-	return c
-}
-
-func (m MemQueue) replenish(ctx context.Context) (err error) {
+func (m MemQueue) replenish() (err error) {
 	need := m.size - len(m.memQueue)
-	if m.storage.HasMore(ctx) && need > 0 {
+	if m.storage.HasMore() && need > 0 {
 		var msgs []interface{}
-		msgs, err = m.storage.PullByLimit(ctx, need)
+		msgs, err = m.storage.PullByLimit(need)
 		if err != nil {
 			err = fmt.Errorf("read message from storage failed: %w", err)
 			return
