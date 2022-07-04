@@ -73,6 +73,15 @@ func (t *DelayValue) ThisTime(state interface{}) {
 	}
 }
 
+func (t *DelayValue) ForceSet(state interface{}) {
+	t.lock.Lock()
+	defer t.lock.Unlock()
+	t.time = time.Now()
+	t.currentValue = state
+	t.lockValue = state
+	t.recently = true
+}
+
 //Current 获取当前状态
 func (t *DelayValue) Current() interface{} {
 	t.lock.RLock()
