@@ -36,7 +36,6 @@ func NewMemQueue(storage Storage, size int, setters ...func(*MemQueue)) *MemQueu
 		storage:      storage,
 		running:      atomic.NewBool(true),
 		size:         size,
-		out:          make(chan interface{}),
 		loadDuration: 500 * time.Millisecond,
 	}
 	for _, set := range setters {
@@ -78,6 +77,8 @@ func (m MemQueue) Pull(ctx context.Context) (msg interface{}, err error) {
 	}
 	for {
 		select {
+		case <-ctx.Done():
+			return nil, errors.New("closed by ctx")
 		case msg, ok := <-m.memQueue:
 			if !ok {
 				return nil, errors.New("queue closed")
@@ -91,20 +92,46 @@ func (m MemQueue) Pull(ctx context.Context) (msg interface{}, err error) {
 	}
 }
 
-//Out 以channel的形式获取数据
-func (m MemQueue) Out(ctx context.Context) chan interface{} {
+//Out 以channel的形式获取数据,chan会返回所有数据
+func (m MemQueue) Out() chan interface{} {
+	if m.out == nil {
+		m.out = make(chan interface{})
+		go func() {
+			for {
+				msg, err := m.Pull(context.Background())
+				if err != nil {
+					log.Printf("message: pull failed, logger: sweetbean.tools.MemQueue, error: %s\n", err.Error())
+					close(m.out)
+					break
+				}
+				m.out <- msg
+			}
+		}()
+	}
+	return m.out
+}
+
+//OutWithCtx 以channel形式返回数据, ctx用于传参和控制销毁, 每次生成新的channel
+func (m MemQueue) OutWithCtx(ctx context.Context) chan interface{} {
+	c := make(chan interface{})
 	go func() {
 		for {
-			msg, err := m.Pull(ctx)
-			if err != nil {
-				log.Printf("message: pull failed, logger: sweetbean.tools.MemQueue, error: %s\n", err.Error())
-				close(m.out)
-				break
+			select {
+			case <-ctx.Done():
+				close(c)
+				return
+			default:
+				msg, err := m.Pull(ctx)
+				if err != nil {
+					log.Printf("message: pull failed, logger: sweetbean.tools.MemQueue, error: %s\n", err.Error())
+					close(c)
+					return
+				}
+				c <- msg
 			}
-			m.out <- msg
 		}
 	}()
-	return m.out
+	return c
 }
 
 func (m MemQueue) replenish(ctx context.Context) (err error) {
