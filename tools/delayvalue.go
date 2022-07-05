@@ -3,8 +3,6 @@ package tools
 import (
 	"sync"
 	"time"
-
-	"github.com/zedisdog/sweetbean/errx"
 )
 
 func NewDelayValue(initValue interface{}, duration time.Duration) *DelayValue {
@@ -25,32 +23,20 @@ type DelayValue struct {
 	recently     bool //是否刚改变
 
 	//下面是锁定状态的设置
-	lockValue   interface{} //锁定的值
-	valueLocked bool        //值是否被手动锁定
+	lockValue    interface{}   //锁定的值
+	backDuration time.Duration //备份的观察时间
 }
 
 //Lock 锁定状态
 func (t *DelayValue) Lock(state interface{}, duration time.Duration) error {
 	t.lock.Lock()
 	defer t.lock.Unlock()
-	if t.valueLocked {
-		return errx.New("value locked")
-	} else {
-		t.valueLocked = true
-	}
-	backDuration := t.duration
 
+	t.backDuration = t.duration
 	t.lockValue = state
 	t.currentValue = state
 	t.duration = duration
 	t.time = time.Now()
-
-	go func(t *DelayValue) {
-		t.lock.Lock()
-		defer t.lock.Unlock()
-		t.duration = backDuration
-		t.valueLocked = false
-	}(t)
 
 	return nil
 }
@@ -65,6 +51,10 @@ func (t *DelayValue) ThisTime(state interface{}) {
 	} else {
 		if t.time.Add(t.duration).Before(time.Now()) {
 			t.time = time.Now()
+			if t.backDuration != 0 {
+				t.duration = t.backDuration
+				t.backDuration = 0
+			}
 			if t.currentValue != t.lockValue {
 				t.lockValue = state
 				t.recently = true
