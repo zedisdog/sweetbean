@@ -72,3 +72,10 @@ func NewHttpErrorUnauthorized(msg string) error {
 		http.StatusUnauthorized,
 	)
 }
+
+func NewHttpErrorNotFound(msg string) error {
+	return WrapByHttpError(
+		New(msg, 1),
+		http.StatusNotFound,
+	)
+}
