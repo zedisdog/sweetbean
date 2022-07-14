@@ -56,7 +56,7 @@ func GenAuthMiddleware(key string, isUserExists func(id interface{}) bool) func(
 
 //BuildAuth
 //  通过加密用的key和查找用户是否存在的函数构造身份验证中间件，中间件通过header中的Authorization字段或者url中queryString的token字段来获取token
-func BuildAuth(key string, isUserExists func(id uint64) bool) func(ctx *gin.Context) {
+func BuildAuth(key string, isUserExists func(id uint64) (bool, error)) func(ctx *gin.Context) {
 	return func(ctx *gin.Context) {
 		var token string
 		if ctx.Request.Header.Get("Authorization") != "" {
@@ -105,7 +105,13 @@ func BuildAuth(key string, isUserExists func(id uint64) bool) func(ctx *gin.Cont
 			return
 		}
 
-		if !isUserExists(id) {
+		exists, err := isUserExists(id)
+		if err != nil {
+			ctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
+				"message": err.Error(),
+			})
+		}
+		if !exists {
 			ctx.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
 				"message": "未授权的访问6",
 			})
