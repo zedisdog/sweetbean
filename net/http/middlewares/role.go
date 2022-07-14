@@ -10,6 +10,8 @@ type CheckRole interface {
 	IsRole(id interface{}, roleName string) bool
 }
 
+// GenRoleMiddleware
+// Deprecated: use GenChecker instead
 func GenRoleMiddleware(svc CheckRole, roleNames ...string) func(*gin.Context) {
 	return func(c *gin.Context) {
 		for _, roleName := range roleNames {
