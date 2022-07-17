@@ -1,8 +1,12 @@
 package tools
 
 import (
-	"github.com/zedisdog/sweetbean/errx"
+	"errors"
 	"reflect"
+	"strings"
+	"unsafe"
+
+	"github.com/zedisdog/sweetbean/errx"
 )
 
 //CopyFields copy fields from src to dest, note: dest mast be point
@@ -10,6 +14,7 @@ import (
 //		src       source object
 //		dest      point of dest object
 //		notCopyZero  if copy zero field too
+//Deprecated: use Convert instead
 func CopyFields(src interface{}, dest interface{}, notCopyZero ...bool) error {
 
 	// dest必须为指针
@@ -42,6 +47,7 @@ func CopyFields(src interface{}, dest interface{}, notCopyZero ...bool) error {
 	return nil
 }
 
+//Deprecated: use Convert instead
 func CopyStructFields(src interface{}, dest interface{}, copyZero ...bool) (dirty bool, err error) {
 
 	// dest必须为指针
@@ -76,4 +82,125 @@ func CopyStructFields(src interface{}, dest interface{}, copyZero ...bool) (dirt
 	}
 
 	return
+}
+
+func Convert(src interface{}, dest interface{}) (err error) {
+	key := "from"
+	tagInDest := true
+	sType := TypeOf(src)
+	sValue := ValueOf(src)
+	dType := TypeOf(dest)
+	dValue := ValueOf(dest)
+
+	tags := GetTags(dType, key, true)
+	if len(tags) < 1 {
+		tags = GetTags(sType, key, true)
+		tagInDest = false
+	}
+
+	for _, value := range tags {
+		if value == "" {
+			return errors.New("tag can not be emtpy")
+		}
+	}
+
+	for key, value := range parseFromTag(tags) {
+		dField := dValue
+		sField := sValue
+
+		if tagInDest {
+			for _, name := range strings.Split(key, ".") {
+				dField = dField.FieldByName(name)
+			}
+			for _, name := range value.Names() {
+				sField = sField.FieldByName(name)
+			}
+		} else {
+			for _, name := range value.Names() {
+				dField = dField.FieldByName(name)
+			}
+			for _, name := range strings.Split(key, ".") {
+				sField = sField.FieldByName(name)
+			}
+		}
+
+		if !dField.CanSet() {
+			ptr := reflect.NewAt(dField.Type(), unsafe.Pointer(dField.UnsafeAddr()))
+			ptr.Elem().Set(sField)
+		} else {
+			dField.Set(sField)
+		}
+	}
+
+	return nil
+}
+
+func ValueOf(target interface{}) reflect.Value {
+	v := reflect.ValueOf(target)
+	return ElemOfValue(v)
+}
+
+func TypeOf(target interface{}) reflect.Type {
+	t := reflect.TypeOf(target)
+	return ElemOfType(t)
+}
+
+func ElemOfType(target reflect.Type) reflect.Type {
+	for target.Kind() == reflect.Pointer {
+		target = target.Elem()
+	}
+	return target
+}
+
+func ElemOfValue(target reflect.Value) reflect.Value {
+	for target.Type().Kind() == reflect.Pointer {
+		target = target.Elem()
+	}
+	return target
+}
+
+func GetTags(t reflect.Type, key string, recursion bool) map[string]string {
+	tags := make(map[string]string)
+	for i := 0; i < t.NumField(); i++ {
+		field := t.Field(i)
+		tagStr, ok := field.Tag.Lookup(key)
+		if ok {
+			tags[field.Name] = tagStr
+		} else if recursion && (field.Type.Kind() == reflect.Struct || field.Type.Kind() == reflect.Pointer) {
+			sub := ElemOfType(field.Type)
+			subMap := GetTags(sub, key, recursion)
+			for key, value := range subMap {
+				tags[field.Name+"."+key] = value
+			}
+		}
+	}
+	return tags
+}
+
+func parseFromTag(tags map[string]string) (m map[string]tagFrom) {
+	m = make(map[string]tagFrom, len(tags))
+	for key, value := range tags {
+		s := strings.Split(value, ",")
+		if len(s) < 1 || s[0] == "" {
+			continue
+		}
+		tag := tagFrom{
+			Name: s[0],
+		}
+		if len(s) > 1 {
+			tag.Type = s[1]
+		}
+		m[key] = tag
+	}
+	return
+}
+
+type tagFrom struct {
+	Name string
+	Type string
+}
+
+//Names returns string slice splited from tagFrom.Name by ","
+func (t tagFrom) Names() []string {
+	return strings.Split(t.Name, ".")
 }
