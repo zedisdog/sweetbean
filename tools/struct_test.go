@@ -65,7 +65,7 @@ func TestConvert(t *testing.T) {
 	})
 }
 
-func TestModifyUnexportAttr(t *testing.T) {
+func TestCopyToUnexportAttr(t *testing.T) {
 	type testDto struct {
 		A int    `from:"a"`
 		B string `from:"b"`
