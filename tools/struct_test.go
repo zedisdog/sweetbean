@@ -67,7 +67,7 @@ func TestConvert(t *testing.T) {
 
 func TestCopyToUnexportAttr(t *testing.T) {
 	type testDto struct {
-		A int    `from:"a"`
+		a int    `from:"a"`
 		B string `from:"b"`
 		C int    `from:"c.d"`
 	}
@@ -78,7 +78,7 @@ func TestCopyToUnexportAttr(t *testing.T) {
 	}
 
 	t1 := testDto{
-		A: 1,
+		a: 1,
 		B: "2",
 		C: 3,
 	}
@@ -86,7 +86,7 @@ func TestCopyToUnexportAttr(t *testing.T) {
 	Convert(t1, &t2)
 	t2.c.d = 2
 	assert.Equal(t, t1, testDto{
-		A: 1,
+		a: 1,
 		B: "2",
 		C: 3,
 	})

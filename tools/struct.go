@@ -124,11 +124,45 @@ func Convert(src interface{}, dest interface{}) (err error) {
 			}
 		}
 
+		var srcValue reflect.Value
+		switch sField.Kind() {
+		case reflect.Int:
+			srcValue = reflect.ValueOf(int(sField.Int()))
+		case reflect.Bool:
+			srcValue = reflect.ValueOf(sField.Bool())
+		case reflect.Int8:
+			srcValue = reflect.ValueOf(int8(sField.Int()))
+		case reflect.Int16:
+			srcValue = reflect.ValueOf(int16(sField.Int()))
+		case reflect.Int32:
+			srcValue = reflect.ValueOf(int32(sField.Int()))
+		case reflect.Int64:
+			srcValue = reflect.ValueOf(int64(sField.Int()))
+		case reflect.Uint:
+			srcValue = reflect.ValueOf(uint(sField.Uint()))
+		case reflect.Uint8:
+			srcValue = reflect.ValueOf(uint8(sField.Uint()))
+		case reflect.Uint16:
+			srcValue = reflect.ValueOf(uint16(sField.Uint()))
+		case reflect.Uint32:
+			srcValue = reflect.ValueOf(uint32(sField.Uint()))
+		case reflect.Uint64:
+			srcValue = reflect.ValueOf(sField.Uint())
+		case reflect.Float32:
+			srcValue = reflect.ValueOf(float32(sField.Float()))
+		case reflect.Float64:
+			srcValue = reflect.ValueOf(sField.Float())
+		case reflect.String:
+			srcValue = reflect.ValueOf(sField.String())
+		default:
+			return errors.New("unsupported type")
+		}
+
 		if !dField.CanSet() {
 			ptr := reflect.NewAt(dField.Type(), unsafe.Pointer(dField.UnsafeAddr()))
-			ptr.Elem().Set(sField)
+			ptr.Elem().Set(srcValue)
 		} else {
-			dField.Set(sField)
+			dField.Set(srcValue)
 		}
 	}
 
