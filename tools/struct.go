@@ -85,7 +85,9 @@ func CopyStructFields(src interface{}, dest interface{}, copyZero ...bool) (dirt
 	return
 }
 
-func Convert(src interface{}, dest interface{}) (err error) {
+type ConvertCallback func(tag string, sValue reflect.Value) (reflect.Value, error)
+
+func Convert(src interface{}, dest interface{}, callbacks ...ConvertCallback) (err error) {
 	key := "from"
 	tagInDest := true
 	sType := TypeOf(src)
@@ -158,6 +160,13 @@ func Convert(src interface{}, dest interface{}) (err error) {
 			srcValue = reflect.ValueOf(sField.String())
 		default:
 			return fmt.Errorf("unsupported type <%s>", sField.Kind().String())
+		}
+
+		for _, callback := range callbacks {
+			srcValue, err = callback(key, srcValue)
+			if err != nil {
+				return
+			}
 		}
 
 		if !dField.CanSet() {
