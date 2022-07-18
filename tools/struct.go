@@ -124,6 +124,7 @@ func Convert(src interface{}, dest interface{}) (err error) {
 			}
 		}
 
+		//源属性可能是私有属性，所以统一使用下面这种方式取值
 		var srcValue reflect.Value
 		switch sField.Kind() {
 		case reflect.Int:
