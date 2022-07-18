@@ -2,6 +2,7 @@ package tools
 
 import (
 	"errors"
+	"fmt"
 	"reflect"
 	"strings"
 	"unsafe"
@@ -156,7 +157,7 @@ func Convert(src interface{}, dest interface{}) (err error) {
 		case reflect.String:
 			srcValue = reflect.ValueOf(sField.String())
 		default:
-			return errors.New("unsupported type")
+			return fmt.Errorf("unsupported type <%s>", sField.Kind().String())
 		}
 
 		if !dField.CanSet() {
