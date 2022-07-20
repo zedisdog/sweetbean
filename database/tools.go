@@ -13,7 +13,7 @@ type Condition = []interface{}
 type Conditions = []Condition
 
 func ParseConditionGorm(q *gorm.DB, conditions Conditions) (query *gorm.DB, err error) {
-	fmt.Printf("%+v\n", conditions)
+	// fmt.Printf("%+v\n", conditions)
 	query = q
 	for _, condition := range conditions {
 		if s, ok := condition[0].(string); ok && (strings.Contains(strings.ToLower(s), "and") || strings.Contains(strings.ToLower(s), "or")) {
