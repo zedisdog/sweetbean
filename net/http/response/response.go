@@ -2,11 +2,12 @@ package response
 
 import (
 	"errors"
+	"math"
+	"net/http"
+
 	"github.com/gin-gonic/gin"
 	"github.com/zedisdog/sweetbean/errx"
 	"gorm.io/gorm"
-	"math"
-	"net/http"
 )
 
 type Meta struct {
@@ -23,6 +24,7 @@ type Response struct {
 }
 
 // Error 返回错误响应 p1 错误 p2 status code
+// TODO: err也要能返回数据
 func Error(c *gin.Context, errAndStatus ...interface{}) {
 	if len(errAndStatus) == 0 {
 		panic("need at least err")
