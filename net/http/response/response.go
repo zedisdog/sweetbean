@@ -24,18 +24,12 @@ type Response struct {
 }
 
 // Error 返回错误响应 p1 错误 p2 status code
-// TODO: err也要能返回数据
-func Error(c *gin.Context, errAndStatus ...interface{}) {
-	if len(errAndStatus) == 0 {
-		panic("need at least err")
-	}
-
-	err := errAndStatus[0].(error)
+func Error(c *gin.Context, err error, status ...interface{}) {
 	res := &Response{Msg: err.Error()}
 
 	var code int
-	if len(errAndStatus) == 2 {
-		code = errAndStatus[1].(int)
+	if len(status) > 0 {
+		code = status[0].(int)
 	} else {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			code = http.StatusNotFound
@@ -47,7 +41,7 @@ func Error(c *gin.Context, errAndStatus ...interface{}) {
 		}
 	}
 
-	c.JSON(code, res)
+	Json(c, res, code, false)
 }
 
 // Success params[0]: data
@@ -73,7 +67,7 @@ func Success(c *gin.Context, params ...interface{}) {
 		code = params[1].(int)
 	}
 
-	c.JSON(code, response)
+	Json(c, response, code, false)
 }
 
 func Pagination(c *gin.Context, data interface{}, total int, page int, perPage int) {
@@ -92,13 +86,13 @@ func Pagination(c *gin.Context, data interface{}, total int, page int, perPage i
 	if resp.Meta.LastPage == 0 {
 		resp.Meta.LastPage = 1
 	}
-	c.JSON(http.StatusOK, resp)
+	Json(c, resp, http.StatusOK, false)
 }
 
-func Return(cxt *gin.Context, data interface{}, err error) {
-	if err != nil {
-		Error(cxt, err)
-		return
+func Json(ctx *gin.Context, data interface{}, status int, abort bool) {
+	if abort {
+		ctx.AbortWithStatusJSON(status, data)
+	} else {
+		ctx.JSON(status, data)
 	}
-	Success(cxt, data)
 }
