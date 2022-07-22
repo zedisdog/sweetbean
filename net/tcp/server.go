@@ -75,9 +75,6 @@ func (s *Server) Start() (err error) {
 			}
 			go s.connHandler(conn.(*net.TCPConn))
 		case <-s.ctx.Done():
-			if s.tcpListener != nil {
-				_ = s.tcpListener.Close()
-			}
 			return
 		}
 	}
