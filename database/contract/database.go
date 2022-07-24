@@ -31,3 +31,7 @@ type CanFind[Model any] interface {
 type CanPage[Model any] interface {
 	Page(offset, limit int, conditions ...database.Condition) (list []Model, total int, err error)
 }
+
+type Assert interface {
+	Exists(...database.Condition) (bool, error)
+}
