@@ -123,3 +123,5 @@ func BuildAuth(key string, isUserExists func(id uint64) (bool, error)) func(ctx 
 		ctx.Next()
 	}
 }
+
+//TODO: 新的auth中间件，用Subject作为id，jti作为token id
