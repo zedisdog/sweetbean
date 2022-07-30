@@ -1,15 +1,17 @@
 package errx
 
 import (
-	"errors"
+	"encoding/json"
 	"fmt"
 	"runtime"
 )
 
 type Error struct {
-	File string
-	Line int
-	error
+	File   string
+	Line   int
+	detail []interface{}
+	msg    string
+	err    error
 }
 
 func (e Error) Format(s fmt.State, c rune) {
@@ -17,44 +19,62 @@ func (e Error) Format(s fmt.State, c rune) {
 	case 'v':
 		switch {
 		case s.Flag('+'):
-			fmt.Printf("%s:%d %s\n", e.File, e.Line, e.error.Error())
+			detail, _ := json.Marshal(e.detail)
+			fmt.Printf("%s:%s\n\t%s:%d\n", e.msg, detail, e.File, e.Line)
+			if e.err != nil {
+				fmt.Printf("%+v", e.err)
+			}
+		case s.Flag('#'):
+			fmt.Printf("%s(%s:%d)\n", e.msg, e.File, e.Line)
+			if e.err != nil {
+				fmt.Printf("%#v", e.err)
+			}
 		default:
-			println(e.error.Error())
+			println(e.Error())
 		}
 	}
-	println(e.error.Error())
 }
 
-func New(msg string, delta ...int) error {
-	e := &Error{
-		File:  "???",
-		error: errors.New(msg),
+func (e Error) Error() (result string) {
+	result = e.msg
+	if e.err != nil {
+		result += "->" + e.err.Error()
 	}
-	skip := 1
-	if len(delta) > 0 {
-		skip += delta[0]
-	}
-	_, file, line, ok := runtime.Caller(skip)
-	if ok {
-		e.File = file
-		e.Line = line
-	}
-	return e
+	return
 }
 
-func Wrap(err error, msg string, delta ...int) error {
-	e := &Error{
-		File:  "???",
-		error: fmt.Errorf("%s:%w", msg, err),
-	}
-	skip := 1
-	if len(delta) > 0 {
-		skip += delta[0]
-	}
-	_, file, line, ok := runtime.Caller(skip)
-	if ok {
-		e.File = file
-		e.Line = line
-	}
+func (e Error) Unwrap() error {
+	return e.err
+}
+
+func New(msg string) *Error {
+	return getPosition(&Error{
+		msg: msg,
+	}, 0)
+}
+
+func NewWithSkip(msg string, delta int) error {
+	return getPosition(&Error{
+		msg: msg,
+	}, delta)
+}
+
+func WrapWithSkip(err error, msg string, delta int) error {
+	return getPosition(&Error{
+		msg: msg,
+		err: err,
+	}, delta)
+}
+
+func Wrap(err error, msg string) error {
+	return getPosition(&Error{
+		msg: msg,
+		err: err,
+	}, 0)
+}
+
+func getPosition(e *Error, delta int) *Error {
+	skip := 2 + delta
+	_, e.File, e.Line, _ = runtime.Caller(skip)
 	return e
 }

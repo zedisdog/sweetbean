@@ -2,19 +2,20 @@ package http
 
 import (
 	"errors"
+	"io"
+	"net/http"
+
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
 	"github.com/iancoleman/strcase"
 	"github.com/zedisdog/sweetbean/errx"
-	"io"
-	"net/http"
 )
 
 func ValidateJSON(c *gin.Context, request interface{}) error {
 	if err := c.ShouldBindJSON(request); err != nil {
 		if e, ok := err.(validator.ValidationErrors); ok {
 			msg, detail := ParseValidateErrors(e, request)
-			return errx.WrapByHttpError(errx.New(msg, 1), http.StatusUnprocessableEntity, detail)
+			return errx.WrapByHttpError(errx.NewWithSkip(msg, 1), http.StatusUnprocessableEntity, detail)
 		} else if errors.Is(err, io.EOF) {
 			return errx.WrapByHttpError(errx.New("empty body"), http.StatusBadRequest)
 		} else {
@@ -34,7 +35,7 @@ type CanGetError interface {
 func ValidateQuery(c *gin.Context, request interface{}) error {
 	if err := c.ShouldBindQuery(request); err != nil {
 		msg, detail := ParseValidateErrors(err.(validator.ValidationErrors), request)
-		return errx.WrapByHttpError(errx.New(msg, 1), http.StatusUnprocessableEntity, detail)
+		return errx.WrapByHttpError(errx.NewWithSkip(msg, 1), http.StatusUnprocessableEntity, detail)
 	}
 
 	return nil
