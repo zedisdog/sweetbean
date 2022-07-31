@@ -175,27 +175,27 @@ func (ab *authBuilder) Build() func(ctx *gin.Context) {
 		if ctx.Request.Header.Get("Authorization") != "" {
 			arr := strings.Split(ctx.Request.Header.Get("Authorization"), " ")
 			if len(arr) < 2 {
-				ctx.AbortWithStatusJSON(http.StatusUnauthorized, map[string]string{"message": "未授权的访问1"})
+				ctx.AbortWithStatusJSON(http.StatusUnauthorized, map[string]string{"message": "bearer token is invalid"})
 				return
 			}
 			token = arr[1]
 		} else if ctx.Query("token") != "" {
 			token = ctx.Query("token")
 		} else {
-			ctx.AbortWithStatusJSON(http.StatusUnauthorized, map[string]string{"message": "未授权的访问2"})
+			ctx.AbortWithStatusJSON(http.StatusUnauthorized, map[string]string{"message": "no token found"})
 			return
 		}
 
 		t, err := tools.Parse(token, ab.authKey)
 		if err != nil || !t.Valid {
-			ctx.AbortWithStatusJSON(http.StatusUnauthorized, map[string]string{"message": "未授权的访问3"})
+			ctx.AbortWithStatusJSON(http.StatusUnauthorized, map[string]string{"message": "token is invalid1"})
 			return
 		}
 
 		claims, ok := t.Claims.(jwt.MapClaims)
 		if !ok {
 			ctx.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
-				"message": "未授权的访问7",
+				"message": "token is invalid2",
 			})
 			return
 		}
@@ -205,7 +205,7 @@ func (ab *authBuilder) Build() func(ctx *gin.Context) {
 			IDStr, ok = claims[ab.userIdentityFrom]
 			if !ok {
 				ctx.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
-					"message": "未授权的访问4",
+					"message": "token is invalid3",
 				})
 				return
 			}
@@ -214,7 +214,7 @@ func (ab *authBuilder) Build() func(ctx *gin.Context) {
 			id, err = strconv.ParseUint(IDStr.(string), 10, 64)
 			if err != nil {
 				ctx.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
-					"message": "未授权的访问5",
+					"message": "token is invalid4",
 				})
 				return
 			}
@@ -223,12 +223,12 @@ func (ab *authBuilder) Build() func(ctx *gin.Context) {
 				exists, err := ab.userExists(id)
 				if err != nil {
 					ctx.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
-						"message": err.Error(),
+						"message": "token is invalid5",
 					})
 				}
 				if !exists {
 					ctx.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
-						"message": "未授权的访问6",
+						"message": "token is invalid6",
 					})
 					return
 				}
@@ -242,7 +242,7 @@ func (ab *authBuilder) Build() func(ctx *gin.Context) {
 			role, ok = claims[ab.roleFrom]
 			if !ok {
 				ctx.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
-					"message": "未授权的访问4",
+					"message": "token is invalid7",
 				})
 				return
 			}
