@@ -21,8 +21,6 @@ func ValidateJSON(c *gin.Context, request interface{}) error {
 		} else {
 			panic(err)
 		}
-
-		return err
 	}
 
 	return nil

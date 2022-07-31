@@ -33,7 +33,7 @@ func Error(c *gin.Context, err error, status ...interface{}) {
 	} else {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			code = http.StatusNotFound
-		} else if er, ok := err.(*errx.HttpError); ok {
+		} else if er, ok := err.(*errx.Error); ok {
 			code = er.Code
 			res.Data = er.Detail
 		} else {

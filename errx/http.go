@@ -3,9 +3,9 @@ package errx
 import "net/http"
 
 func WrapByHttpError(err error, code int, detail ...map[string]string) error {
-	e := &HttpError{
-		Code:  code,
-		error: err,
+	e := &Error{
+		Code: code,
+		err:  err,
 	}
 	if len(detail) > 0 {
 		e.Detail = detail[0]
@@ -14,20 +14,14 @@ func WrapByHttpError(err error, code int, detail ...map[string]string) error {
 }
 
 func NewHttpError(code int, msg string, detail ...map[string]string) error {
-	e := &HttpError{
-		Code:  code,
-		error: NewWithSkip(msg, 1),
+	e := &Error{
+		Code: code,
+		err:  NewWithSkip(msg, 1),
 	}
 	if len(detail) > 0 {
 		e.Detail = detail[0]
 	}
 	return e
-}
-
-type HttpError struct {
-	Code int
-	error
-	Detail map[string]string
 }
 
 func NewHttpErrorUnprocessableEntity(msg string, detail ...map[string]string) error {

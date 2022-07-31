@@ -7,10 +7,11 @@ import (
 )
 
 type Error struct {
-	File   string
-	Line   int
-	detail []interface{}
-	msg    string
+	file   string
+	line   int
+	Code   int
+	Detail interface{}
+	Msg    string
 	err    error
 }
 
@@ -19,13 +20,13 @@ func (e Error) Format(s fmt.State, c rune) {
 	case 'v':
 		switch {
 		case s.Flag('+'):
-			detail, _ := json.Marshal(e.detail)
-			fmt.Printf("%s:%s\n\t%s:%d\n", e.msg, detail, e.File, e.Line)
+			detail, _ := json.Marshal(e.Detail)
+			fmt.Printf("%s:%s\n\t%s:%d\n", e.Msg, detail, e.file, e.line)
 			if e.err != nil {
 				fmt.Printf("%+v", e.err)
 			}
 		case s.Flag('#'):
-			fmt.Printf("%s(%s:%d)\n", e.msg, e.File, e.Line)
+			fmt.Printf("%s(%s:%d)\n", e.Msg, e.file, e.line)
 			if e.err != nil {
 				fmt.Printf("%#v", e.err)
 			}
@@ -36,7 +37,7 @@ func (e Error) Format(s fmt.State, c rune) {
 }
 
 func (e Error) Error() (result string) {
-	result = e.msg
+	result = e.Msg
 	if e.err != nil {
 		result += "->" + e.err.Error()
 	}
@@ -49,32 +50,32 @@ func (e Error) Unwrap() error {
 
 func New(msg string) *Error {
 	return getPosition(&Error{
-		msg: msg,
+		Msg: msg,
 	}, 0)
 }
 
 func NewWithSkip(msg string, delta int) error {
 	return getPosition(&Error{
-		msg: msg,
+		Msg: msg,
 	}, delta)
 }
 
 func WrapWithSkip(err error, msg string, delta int) error {
 	return getPosition(&Error{
-		msg: msg,
+		Msg: msg,
 		err: err,
 	}, delta)
 }
 
 func Wrap(err error, msg string) error {
 	return getPosition(&Error{
-		msg: msg,
+		Msg: msg,
 		err: err,
 	}, 0)
 }
 
 func getPosition(e *Error, delta int) *Error {
 	skip := 2 + delta
-	_, e.File, e.Line, _ = runtime.Caller(skip)
+	_, e.file, e.line, _ = runtime.Caller(skip)
 	return e
 }
