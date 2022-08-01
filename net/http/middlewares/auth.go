@@ -125,7 +125,7 @@ func BuildAuth(key string, isUserExists func(id uint64) (bool, error)) func(ctx 
 	}
 }
 
-func NewAuth() *authBuilder {
+func NewAuthBuilder() *authBuilder {
 	return &authBuilder{}
 }
 
