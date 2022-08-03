@@ -17,10 +17,10 @@ type Transaction[Tx any, Self any] interface {
 }
 
 //Repo repo基础方法接口
-type Repo[Model any, IdentityType any] interface {
+type Repo[Model any] interface {
 	Create(*Model) error
 	Update(*Model) error
-	Delete(IdentityType) error
+	Delete(...database.Condition) error
 	First(...database.Condition) (Model, error)
 }
 
