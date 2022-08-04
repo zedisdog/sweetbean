@@ -15,7 +15,7 @@ type Conditions []Condition
 func (cs Conditions) Apply(q *gorm.DB) (query *gorm.DB, err error) {
 	query = q
 	for _, condition := range cs {
-		if s, ok := condition[0].(string); ok && (strings.Contains(strings.ToLower(s), "and") || strings.Contains(strings.ToLower(s), "or")) {
+		if s, ok := condition[0].(string); ok && (strings.Contains(strings.ToLower(s), " and ") || strings.Contains(strings.ToLower(s), " or ")) {
 			query = query.Where(s, condition[1:]...)
 		} else {
 			switch len(condition) {
@@ -27,7 +27,7 @@ func (cs Conditions) Apply(q *gorm.DB) (query *gorm.DB, err error) {
 				if v.Kind() == reflect.Slice {
 					query = query.Where(fmt.Sprintf("%s IN ?", condition[0]), condition[1])
 				} else {
-					if s, ok := condition[1].(string); ok && strings.HasPrefix(strings.ToLower(s), "is") {
+					if s, ok := condition[1].(string); ok && strings.HasPrefix(strings.ToLower(s), "is ") {
 						query = query.Where(fmt.Sprintf("%s %s", condition[0], condition[1]))
 					} else {
 						query = query.Where(fmt.Sprintf("%s = ?", condition[0]), condition[1])
@@ -55,10 +55,9 @@ func (cs Conditions) Apply(q *gorm.DB) (query *gorm.DB, err error) {
 //ParseConditionGorm
 //Deprecated: use Conditions.Parse instead
 func ParseConditionGorm(q *gorm.DB, conditions Conditions) (query *gorm.DB, err error) {
-	// fmt.Printf("%+v\n", conditions)
 	query = q
 	for _, condition := range conditions {
-		if s, ok := condition[0].(string); ok && (strings.Contains(strings.ToLower(s), "and") || strings.Contains(strings.ToLower(s), "or")) {
+		if s, ok := condition[0].(string); ok && (strings.Contains(strings.ToLower(s), " and ") || strings.Contains(strings.ToLower(s), " or ")) {
 			query = query.Where(s, condition[1:]...)
 		} else {
 			switch len(condition) {
@@ -70,7 +69,7 @@ func ParseConditionGorm(q *gorm.DB, conditions Conditions) (query *gorm.DB, err 
 				if v.Kind() == reflect.Slice {
 					query = query.Where(fmt.Sprintf("%s IN ?", condition[0]), condition[1])
 				} else {
-					if s, ok := condition[1].(string); ok && strings.HasPrefix(strings.ToLower(s), "is") {
+					if s, ok := condition[1].(string); ok && strings.Contains(strings.ToLower(s), "is ") {
 						query = query.Where(fmt.Sprintf("%s %s", condition[0], condition[1]))
 					} else {
 						query = query.Where(fmt.Sprintf("%s = ?", condition[0]), condition[1])
