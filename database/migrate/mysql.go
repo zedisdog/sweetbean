@@ -2,12 +2,17 @@ package migrate
 
 import (
 	"database/sql"
+	"io/fs"
+
 	"github.com/golang-migrate/migrate/v4"
 	"github.com/golang-migrate/migrate/v4/database/mysql"
-	"io/fs"
+	"github.com/zedisdog/sweetbean/errx"
 )
 
-func InitAutoMigrateForMysqlFunc(dsn string, f fs.FS) func() error {
+func InitAutoMigrateForMysqlFunc(dsn string, fss ...fs.FS) func() error {
+	if len(fss) < 1 {
+		panic(errx.New("fs can not be empty"))
+	}
 	return func() (err error) {
 		db, err := sql.Open("mysql", dsn)
 		if err != nil {
@@ -21,7 +26,9 @@ func InitAutoMigrateForMysqlFunc(dsn string, f fs.FS) func() error {
 		}
 
 		driver := NewFsDriver()
-		driver.Add(f)
+		for _, f := range fss {
+			driver.Add(f)
+		}
 
 		m, err := migrate.NewWithInstance("", driver, "main", instance)
 		if err != nil {
