@@ -35,3 +35,7 @@ type CanPage[Model any] interface {
 type Assert interface {
 	Exists(...database.Condition) (bool, error)
 }
+
+type CanCount interface {
+	Count(...database.Condition) (count int, err error)
+}
