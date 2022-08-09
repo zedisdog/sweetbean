@@ -30,7 +30,7 @@ func NewJwtTokenBuilder() *jwtTokenBuilder {
 
 type jwtTokenBuilder struct {
 	jwt.MapClaims
-	key    string
+	key    []byte
 	method jwt.SigningMethod
 }
 
@@ -53,7 +53,7 @@ func (j *jwtTokenBuilder) WithClaims(claims map[string]interface{}) *jwtTokenBui
 }
 
 func (j *jwtTokenBuilder) WithKey(key string) *jwtTokenBuilder {
-	j.key = key
+	j.key = []byte(key)
 	return j
 }
 
