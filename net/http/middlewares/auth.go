@@ -11,11 +11,12 @@ import (
 	"github.com/golang-jwt/jwt/v4"
 )
 
+//Deprecated: use BuildAuth instead
+//
 //GenAuthMiddleware generate an auth middleware
 //	claims: the customer Claims object
 //	key: the key for validate sign
 //	isUserExists: a function to determine if account is exists
-//Deprecated: use BuildAuth instead
 func GenAuthMiddleware(key string, isUserExists func(id interface{}) bool) func(*gin.Context) {
 	return func(c *gin.Context) {
 		var token string
@@ -54,8 +55,8 @@ func GenAuthMiddleware(key string, isUserExists func(id interface{}) bool) func(
 	}
 }
 
-//BuildAuth 通过加密用的key和查找用户是否存在的函数构造身份验证中间件，中间件通过header中的Authorization字段或者url中queryString的token字段来获取token
 //Deprecated: use middlewares.auth generate by middlewares.NewAuth instead.
+//BuildAuth 通过加密用的key和查找用户是否存在的函数构造身份验证中间件，中间件通过header中的Authorization字段或者url中queryString的token字段来获取token
 func BuildAuth(key string, isUserExists func(id uint64) (bool, error)) func(ctx *gin.Context) {
 	return func(ctx *gin.Context) {
 		var token string

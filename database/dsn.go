@@ -1,11 +1,13 @@
 package database
 
 import (
+	"regexp"
+
 	"github.com/zedisdog/sweetbean/errx"
 	"github.com/zedisdog/sweetbean/tools"
-	"regexp"
 )
 
+//Type is database type. eg. mysql, postgres
 type Type string
 
 const (

@@ -52,8 +52,9 @@ func (cs Conditions) Apply(q *gorm.DB) (query *gorm.DB, err error) {
 	return
 }
 
+//Deprecated: use Conditions.Parse instead.
+//
 //ParseConditionGorm
-//Deprecated: use Conditions.Parse instead
 func ParseConditionGorm(q *gorm.DB, conditions Conditions) (query *gorm.DB, err error) {
 	query = q
 	for _, condition := range conditions {
