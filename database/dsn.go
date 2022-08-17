@@ -7,7 +7,7 @@ import (
 	"github.com/zedisdog/sweetbean/tools"
 )
 
-//Type is database type. eg. mysql, postgres
+// Type is database type. eg. mysql, postgres
 type Type string
 
 const (
