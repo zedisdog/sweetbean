@@ -13,6 +13,9 @@ type Condition []interface{}
 type Conditions []Condition
 
 func (cs Conditions) Apply(q *gorm.DB) (query *gorm.DB, err error) {
+	if len(cs) < 1 {
+		return q, nil
+	}
 	query = q
 	for _, condition := range cs {
 		if s, ok := condition[0].(string); ok && (strings.Contains(strings.ToLower(s), " and ") || strings.Contains(strings.ToLower(s), " or ")) {
@@ -52,9 +55,9 @@ func (cs Conditions) Apply(q *gorm.DB) (query *gorm.DB, err error) {
 	return
 }
 
-//Deprecated: use Conditions.Parse instead.
+// Deprecated: use Conditions.Parse instead.
 //
-//ParseConditionGorm
+// ParseConditionGorm
 func ParseConditionGorm(q *gorm.DB, conditions Conditions) (query *gorm.DB, err error) {
 	query = q
 	for _, condition := range conditions {

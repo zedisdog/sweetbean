@@ -64,10 +64,10 @@ func (j *jwtTokenBuilder) WithMethod(method jwt.SigningMethod) *jwtTokenBuilder 
 
 func (j jwtTokenBuilder) BuildToken() (string, error) {
 	t := jwt.NewWithClaims(j.method, j.MapClaims)
-	return t.SignedString(j.key)
+	return t.SignedString([]byte(j.key))
 }
 
-//Deprecated: use NewJwtTokenBuilder instead
+// Deprecated: use NewJwtTokenBuilder instead
 func GenerateToken(key []byte, claims jwt.Claims) (string, error) {
 	if claims == nil {
 		panic("clamis is required")
