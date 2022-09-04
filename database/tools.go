@@ -18,7 +18,7 @@ func (cs Conditions) Apply(q *gorm.DB) (query *gorm.DB, err error) {
 	}
 	query = q
 	for _, condition := range cs {
-		if s, ok := condition[0].(string); ok && (strings.Contains(strings.ToLower(s), " and ") || strings.Contains(strings.ToLower(s), " or ")) {
+		if s, ok := condition[0].(string); ok && (strings.Contains(strings.ToLower(s), " and ") || strings.Contains(strings.ToLower(s), " or ") || strings.Contains(strings.ToLower(s), "?")) {
 			query = query.Where(s, condition[1:]...)
 		} else {
 			switch len(condition) {
