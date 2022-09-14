@@ -8,6 +8,7 @@ import (
 
 	"github.com/golang-migrate/migrate/v4"
 	"github.com/zedisdog/sweetbean/database/seed"
+	"github.com/zedisdog/sweetbean/storage"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
 )
@@ -28,6 +29,7 @@ type App struct {
 	RunWait     sync.WaitGroup
 	Seeder      seed.GormSeedFunc
 	DB          *gorm.DB
+	Storage     storage.IStorage
 }
 
 func (a App) MigratorUp() error {
