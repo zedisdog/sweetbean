@@ -132,7 +132,7 @@ func NewAuthBuilder() *authBuilder {
 
 // authBuilder auth middleware builder. it parse token with given conditions.
 type authBuilder struct {
-	userIdentityFrom string                        //field name of user identity in token
+	userIdentityFrom []string                      //field name of user identity in token
 	tokenIDFrom      string                        //filed name of token identity in token
 	roleFrom         string                        //filed name of role name in token
 	userExists       func(id uint64) (bool, error) //function to determine if user exists
@@ -140,7 +140,7 @@ type authBuilder struct {
 	cacheClaims      bool                          //if cache claims into context
 }
 
-func (ab *authBuilder) WithUserIdentityFrom(jwtField string) *authBuilder {
+func (ab *authBuilder) WithUserIdentityFrom(jwtField ...string) *authBuilder {
 	ab.userIdentityFrom = jwtField
 	return ab
 }
@@ -201,10 +201,15 @@ func (ab *authBuilder) Build() func(ctx *gin.Context) {
 			return
 		}
 
-		if ab.userIdentityFrom != "" {
+		if len(ab.userIdentityFrom) > 0 {
 			var IDStr interface{}
-			IDStr, ok = claims[ab.userIdentityFrom]
-			if !ok {
+			for _, field := range ab.userIdentityFrom {
+				IDStr, ok = claims[field]
+				if ok {
+					break
+				}
+			}
+			if IDStr == nil {
 				ctx.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{
 					"message": "token is invalid3",
 				})
