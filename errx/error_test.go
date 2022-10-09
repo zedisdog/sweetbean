@@ -1,10 +1,12 @@
 package errx
 
 import (
-	"runtime/debug"
+	"fmt"
 	"testing"
 )
 
 func TestNormal(t *testing.T) {
-	println(string(debug.Stack()))
+	err := Wrap(New("test"), "testtt")
+	fmt.Printf("%+v", err)
+	println(err.Error())
 }

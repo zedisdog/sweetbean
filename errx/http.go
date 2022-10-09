@@ -3,6 +3,9 @@ package errx
 import "net/http"
 
 func WrapByHttpError(err error, code int, msg string, detail map[string]string) error {
+	if err == nil {
+		return nil
+	}
 	e := Wrap(err, msg)
 	e.(*Error).Code = code
 	e.(*Error).Detail = detail
