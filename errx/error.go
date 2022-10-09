@@ -32,9 +32,9 @@ func (e Error) BuildDetail() string {
 	detail, _ := json.Marshal(e.Detail)
 	stack := string(e.Stack)
 	if e.err != nil {
-		return fmt.Sprintf(">>>>>>>>\n%s: %s\n%s\n%s\n<<<<<<<<<\n", e.Msg, e.err.Error(), detail, stack)
+		return fmt.Sprintf("\n>>>>>>>>\n%s: %s\n%s\n%s\n<<<<<<<<<\n", e.Msg, e.err.Error(), detail, stack)
 	} else {
-		return fmt.Sprintf(">>>>>>>>\n%s\n%s\n%s\n<<<<<<<<<\n", e.Msg, detail, stack)
+		return fmt.Sprintf("\n>>>>>>>>\n%s\n%s\n%s\n<<<<<<<<<\n", e.Msg, detail, stack)
 	}
 }
 
