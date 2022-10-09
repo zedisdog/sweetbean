@@ -3,13 +3,12 @@ package errx
 import (
 	"encoding/json"
 	"fmt"
-	"runtime"
+	"runtime/debug"
 )
 
 type Error struct {
-	file   string
-	line   int
 	Code   int
+	Stack  []byte
 	Detail interface{}
 	Msg    string
 	err    error
@@ -20,26 +19,29 @@ func (e Error) Format(s fmt.State, c rune) {
 	case 'v':
 		switch {
 		case s.Flag('+'):
-			detail, _ := json.Marshal(e.Detail)
-			fmt.Printf("%s:%s\n\t%s:%d\n", e.Msg, detail, e.file, e.line)
-			if e.err != nil {
-				fmt.Printf("%+v", e.err)
-			}
+			print(e.BuildDetail())
 		case s.Flag('#'):
-			fmt.Printf("%s(%s:%d)\n", e.Msg, e.file, e.line)
-			if e.err != nil {
-				fmt.Printf("%#v", e.err)
-			}
+			fallthrough
 		default:
 			println(e.Error())
 		}
 	}
 }
 
+func (e Error) BuildDetail() string {
+	detail, _ := json.Marshal(e.Detail)
+	stack := string(e.Stack)
+	if e.err != nil {
+		return fmt.Sprintf(">>>>>>>>\n%s: %s\n%s\n%s\n<<<<<<<<<\n", e.Msg, e.err.Error(), detail, stack)
+	} else {
+		return fmt.Sprintf(">>>>>>>>\n%s\n%s\n%s\n<<<<<<<<<\n", e.Msg, detail, stack)
+	}
+}
+
 func (e Error) Error() (result string) {
 	result = e.Msg
 	if e.err != nil {
-		result += "->" + e.err.Error()
+		result += ": " + e.err.Error()
 	}
 	return
 }
@@ -48,34 +50,17 @@ func (e Error) Unwrap() error {
 	return e.err
 }
 
-func New(msg string) *Error {
-	return getPosition(&Error{
-		Msg: msg,
-	}, 0)
-}
-
-func NewWithSkip(msg string, delta int) error {
-	return getPosition(&Error{
-		Msg: msg,
-	}, delta)
-}
-
-func WrapWithSkip(err error, msg string, delta int) error {
-	return getPosition(&Error{
-		Msg: msg,
-		err: err,
-	}, delta)
+func New(msg string) error {
+	return &Error{
+		Msg:   msg,
+		Stack: debug.Stack(),
+	}
 }
 
 func Wrap(err error, msg string) error {
-	return getPosition(&Error{
-		Msg: msg,
-		err: err,
-	}, 0)
-}
-
-func getPosition(e *Error, delta int) *Error {
-	skip := 2 + delta
-	_, e.file, e.line, _ = runtime.Caller(skip)
-	return e
+	return &Error{
+		Msg:   msg,
+		err:   err,
+		Stack: debug.Stack(),
+	}
 }

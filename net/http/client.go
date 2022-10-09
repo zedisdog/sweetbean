@@ -77,13 +77,14 @@ func PutJSON(url string, data interface{}) (response []byte, err error) {
 func PutWithHeader(url string, data interface{}, headers map[string][]string) (response []byte, err error) {
 	request, err := buildRequest(http.MethodPut, url, data, WithHeaders(headers))
 	if err != nil {
-		err = errx.NewHttpError(0, err.Error())
+		err = errx.Wrap(err, "put failed")
 		return
 	}
 	return Request(request)
 }
 
-//PostJSON post json
+// PostJSON post json
+//
 //	url is the target to post.
 //
 //	data is to be posted.it can be string, []byte and struct, also nil.
@@ -97,13 +98,13 @@ func PostJSON(url string, data interface{}) (response []byte, err error) {
 func PostWithHeader(url string, data interface{}, headers map[string][]string) (response []byte, err error) {
 	request, err := buildRequest(http.MethodPost, url, data, WithHeaders(headers))
 	if err != nil {
-		err = errx.NewHttpError(0, err.Error())
+		err = errx.Wrap(err, "post failed")
 		return
 	}
 	return Request(request)
 }
 
-//GetJSON get json
+// GetJSON get json
 func GetJSON(url string) (response []byte, err error) {
 	return GetWithHeader(url, map[string][]string{
 		"Content-Type": {"application/json"},
@@ -114,7 +115,7 @@ func GetJSON(url string) (response []byte, err error) {
 func GetWithHeader(url string, headers map[string][]string) (response []byte, err error) {
 	request, err := buildRequest(http.MethodGet, url, nil, WithHeaders(headers))
 	if err != nil {
-		err = errx.NewHttpError(0, err.Error())
+		err = errx.Wrap(err, "get failed")
 		return
 	}
 
@@ -124,20 +125,20 @@ func GetWithHeader(url string, headers map[string][]string) (response []byte, er
 func Request(request *http.Request) (response []byte, err error) {
 	resp, err := http.DefaultClient.Do(request)
 	if err != nil {
-		err = errx.NewHttpError(0, err.Error())
+		err = errx.Wrap(err, "request failed")
 		return
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode >= http.StatusBadRequest {
 		content, _ := io.ReadAll(resp.Body)
-		err = errx.NewHttpError(resp.StatusCode, string(content))
+		err = errx.NewHttpError(resp.StatusCode, "http error", map[string]string{"content": string(content)})
 		return
 	}
 
 	response, err = io.ReadAll(resp.Body)
 	if err != nil {
-		err = errx.NewHttpError(0, err.Error())
+		err = errx.Wrap(err, "read body failed")
 		return
 	}
 	return

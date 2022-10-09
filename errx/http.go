@@ -2,74 +2,71 @@ package errx
 
 import "net/http"
 
-func WrapByHttpError(err error, code int, detail ...map[string]string) error {
-	e := &Error{
-		Code: code,
-		err:  err,
-	}
-	if len(detail) > 0 {
-		e.Detail = detail[0]
-	}
+func WrapByHttpError(err error, code int, msg string, detail map[string]string) error {
+	e := Wrap(err, msg)
+	e.(*Error).Code = code
+	e.(*Error).Detail = detail
 	return e
 }
 
-func NewHttpError(code int, msg string, detail ...map[string]string) error {
-	e := &Error{
-		Code: code,
-		err:  NewWithSkip(msg, 1),
-	}
-	if len(detail) > 0 {
-		e.Detail = detail[0]
-	}
+func NewHttpError(code int, msg string, detail map[string]string) error {
+	e := New(msg)
+	e.(*Error).Detail = detail
 	return e
 }
 
-func NewHttpErrorUnprocessableEntity(msg string, detail ...map[string]string) error {
-	return WrapByHttpError(
-		NewWithSkip(msg, 1),
+func NewHttpErrorUnprocessableEntity(msg string, detail map[string]string) error {
+	return NewHttpError(
 		http.StatusUnprocessableEntity,
-		detail...,
+		msg,
+		detail,
 	)
 }
 
 func NewHttpErrorBadRequest(msg string) error {
-	return WrapByHttpError(
-		NewWithSkip(msg, 1),
+	return NewHttpError(
 		http.StatusBadRequest,
+		msg,
+		nil,
 	)
 }
 
 func NewHttpErrorForbidden(msg string) error {
-	return WrapByHttpError(
-		NewWithSkip(msg, 1),
+	return NewHttpError(
 		http.StatusForbidden,
+		msg,
+		nil,
 	)
 }
 
 func NewHttpErrorConflict(msg string) error {
-	return WrapByHttpError(
-		NewWithSkip(msg, 1),
+	return NewHttpError(
 		http.StatusConflict,
+		msg,
+		nil,
 	)
 }
 
 func NewHttpErrorTeapot(msg string) error {
-	return WrapByHttpError(
-		NewWithSkip(msg, 1),
+	return NewHttpError(
 		http.StatusTeapot,
+		msg,
+		nil,
 	)
 }
 
 func NewHttpErrorUnauthorized(msg string) error {
-	return WrapByHttpError(
-		NewWithSkip(msg, 1),
+	return NewHttpError(
 		http.StatusUnauthorized,
+		msg,
+		nil,
 	)
 }
 
 func NewHttpErrorNotFound(msg string) error {
-	return WrapByHttpError(
-		NewWithSkip(msg, 1),
+	return NewHttpError(
 		http.StatusNotFound,
+		msg,
+		nil,
 	)
 }

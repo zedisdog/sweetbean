@@ -52,7 +52,7 @@ func (s Storage) randFileName(ext string) (name string, err error) {
 	}
 }
 
-//PutFileQuick is similar than PutFile, but don't set filename.
+// PutFileQuick is similar than PutFile, but don't set filename.
 func (s Storage) PutFileQuick(file *multipart.FileHeader, directory string) (path string, err error) {
 	fileName, err := s.randFileName(filepath.Ext(file.Filename))
 	if err != nil {
@@ -128,33 +128,33 @@ func (s Storage) MimeType(path string) (string, error) {
 	if ss, ok := interface{}(s.driver).(DriverHasMime); ok {
 		return ss.MimeType(path), nil
 	}
-	return "", errx.NewWithSkip("driver is not implement interface <DriverHasMime>", 1)
+	return "", errx.New("driver is not implement interface <DriverHasMime>")
 }
 
 func (s Storage) Path(path string) (string, error) {
 	if ss, ok := interface{}(s.driver).(DriverHasPath); ok {
 		return ss.Path(path), nil
 	}
-	return "", errx.NewWithSkip("driver is not implement interface <DriverHasPath>", 1)
+	return "", errx.New("driver is not implement interface <DriverHasPath>")
 }
 
 func (s Storage) Base64(path string) (string, error) {
 	if ss, ok := interface{}(s.driver).(DriverHasBase64); ok {
 		return ss.Base64(path)
 	}
-	return "", errx.NewWithSkip("driver is not implement interface <DriverHasBase64>", 1)
+	return "", errx.New("driver is not implement interface <DriverHasBase64>")
 }
 
 func (s Storage) Size(path string) (int, error) {
 	if ss, ok := interface{}(s.driver).(DriverCanGetSize); ok {
 		return ss.Size(path)
 	}
-	return 0, errx.NewWithSkip("driver is not implement interface <DriverCanGetSize>", 1)
+	return 0, errx.New("driver is not implement interface <DriverCanGetSize>")
 }
 
 func (s Storage) Url(path string) (string, error) {
 	if ss, ok := interface{}(s.driver).(DriverHasUrl); ok {
 		return ss.Url(path), nil
 	}
-	return "", errx.NewWithSkip("driver is not implement interface <DriverHasUrl>", 1)
+	return "", errx.New("driver is not implement interface <DriverHasUrl>")
 }

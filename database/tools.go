@@ -23,7 +23,7 @@ func (cs Conditions) Apply(q *gorm.DB) (query *gorm.DB, err error) {
 		} else {
 			switch len(condition) {
 			case 0, 1:
-				err = errx.NewWithSkip("condition is invalid", 1)
+				err = errx.New("condition is invalid")
 				return
 			case 2:
 				v := reflect.ValueOf(condition[1])
@@ -43,11 +43,11 @@ func (cs Conditions) Apply(q *gorm.DB) (query *gorm.DB, err error) {
 				case "BETWEEN", "NOTBETWEEN":
 					query = query.Where(fmt.Sprintf("%s %s ? AND ?", condition[0], condition[1]), condition[2], condition[3])
 				default:
-					err = errx.NewWithSkip("condition is invalid", 1)
+					err = errx.New("condition is invalid")
 					return
 				}
 			default:
-				err = errx.NewWithSkip("condition is invalid", 1)
+				err = errx.New("condition is invalid")
 				return
 			}
 		}
@@ -66,7 +66,7 @@ func ParseConditionGorm(q *gorm.DB, conditions Conditions) (query *gorm.DB, err 
 		} else {
 			switch len(condition) {
 			case 0, 1:
-				err = errx.NewWithSkip("condition is invalid", 1)
+				err = errx.New("condition is invalid")
 				return
 			case 2:
 				v := reflect.ValueOf(condition[1])
@@ -86,11 +86,11 @@ func ParseConditionGorm(q *gorm.DB, conditions Conditions) (query *gorm.DB, err 
 				case "BETWEEN", "NOTBETWEEN":
 					query = query.Where(fmt.Sprintf("%s %s ? AND ?", condition[0], condition[1]), condition[2], condition[3])
 				default:
-					err = errx.NewWithSkip("condition is invalid", 1)
+					err = errx.New("condition is invalid")
 					return
 				}
 			default:
-				err = errx.NewWithSkip("condition is invalid", 1)
+				err = errx.New("condition is invalid")
 				return
 			}
 		}
