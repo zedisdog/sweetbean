@@ -73,3 +73,11 @@ func NewHttpErrorNotFound(msg string) error {
 		nil,
 	)
 }
+
+func NewHttpErrorInternalServerError(msg string) error {
+	return NewHttpError(
+		http.StatusInternalServerError,
+		msg,
+		nil,
+	)
+}
