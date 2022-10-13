@@ -74,9 +74,17 @@ func NewHttpErrorNotFound(msg string) error {
 	)
 }
 
-func NewHttpErrorInternalServerError(msg string) error {
+func NewHttpErrorInternalServer(msg string) error {
 	return NewHttpError(
 		http.StatusInternalServerError,
+		msg,
+		nil,
+	)
+}
+
+func NewHttpErrorBadGateway(msg string) error {
+	return NewHttpError(
+		http.StatusBadGateway,
 		msg,
 		nil,
 	)
