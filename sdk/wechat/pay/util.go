@@ -7,7 +7,7 @@ import (
 	"github.com/zedisdog/sweetbean/errx"
 )
 
-func BuidAttachmentsMap(attachments map[string]string) (attach string, err error) {
+func BuildAttachmentsMap(attachments map[string]string) (attach string) {
 	if len(attachments) < 1 {
 		return
 	}
@@ -16,7 +16,7 @@ func BuidAttachmentsMap(attachments map[string]string) (attach string, err error
 		result = append(result, fmt.Sprintf("%s=%s", key, value))
 	}
 
-	return BuildAttachmentsSlice(result), nil
+	return BuildAttachmentsSlice(result)
 }
 
 func BuildAttachmentsSlice(attachments []string) string {
