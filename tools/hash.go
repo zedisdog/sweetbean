@@ -27,7 +27,7 @@ func Hash(str string, options ...WithHashOption) (string, error) {
 	return hex.EncodeToString(cryptor.Sum(option.Key)), nil
 }
 
-//CheckHash check if hash and text string are equaled.
+// CheckHash check if hash and text string are equaled.
 func CheckHash(hashStr string, text string, options ...WithHashOption) bool {
 	hash, err := Hash(text, options...)
 	if err != nil {
@@ -45,7 +45,7 @@ func WithKey(str []byte) WithHashOption {
 
 type WithHashOption func(option *HashOption)
 
-//Sha1 sha1算法
+// Sha1 sha1算法
 func Sha1(str string) string {
 	hash := crypto.SHA1.New()
 	hash.Write([]byte(str))
