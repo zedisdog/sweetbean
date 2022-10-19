@@ -61,9 +61,15 @@ func Wrap(err error, msg string) error {
 	if err == nil {
 		return nil
 	}
-	return &Error{
+	e := &Error{
 		Msg:   msg,
 		err:   err,
 		Stack: debug.Stack(),
 	}
+
+	if ee, ok := interface{}(err).(*Error); ok {
+		e.Code = ee.Code
+	}
+
+	return e
 }

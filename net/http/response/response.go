@@ -45,7 +45,8 @@ func Error(c *gin.Context, err error, status ...interface{}) {
 }
 
 // Success params[0]: data
-//         params[1]: status code
+//
+//	params[1]: status code
 func Success(c *gin.Context, params ...interface{}) {
 	var (
 		code     int
