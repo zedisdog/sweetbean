@@ -19,7 +19,7 @@ func (e Error) Format(s fmt.State, c rune) {
 	case 'v':
 		switch {
 		case s.Flag('+'):
-			print(e.BuildDetail())
+			println(e.BuildDetail())
 		case s.Flag('#'):
 			fallthrough
 		default:

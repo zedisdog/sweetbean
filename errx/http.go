@@ -15,6 +15,7 @@ func WrapByHttpError(err error, code int, msg string, detail map[string]string) 
 func NewHttpError(code int, msg string, detail map[string]string) error {
 	e := New(msg)
 	e.(*Error).Detail = detail
+	e.(*Error).Code = code
 	return e
 }
 
