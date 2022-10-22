@@ -35,10 +35,10 @@ func ParseAttachmentsMap(attachments string) (result map[string]string, err erro
 			return nil, errx.New(fmt.Sprintf("there is no key value pair exists in <%s>", item))
 		}
 		ss := strings.Split(item, "=")
-		if len(ss) > 2 {
+		if len(ss) != 2 {
 			return nil, errx.New(fmt.Sprintf("there is multi '=' in <%s>", item))
 		}
-		result[ss[0]] = result[ss[1]]
+		result[ss[0]] = ss[1]
 	}
 	return
 }
