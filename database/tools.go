@@ -37,7 +37,7 @@ func (cs Conditions) Apply(q *gorm.DB) (query *gorm.DB, err error) {
 					}
 				}
 			case 3:
-				query = query.Where(fmt.Sprintf("%s %s ?", condition[0], condition[1]), condition[2])
+				query = query.Where(fmt.Sprintf("%s %s (?)", condition[0], condition[1]), condition[2])
 			case 4:
 				switch strings.Replace(strings.ToUpper(condition[1].(string)), " ", "", -1) {
 				case "BETWEEN", "NOTBETWEEN":
