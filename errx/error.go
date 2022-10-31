@@ -19,11 +19,11 @@ func (e Error) Format(s fmt.State, c rune) {
 	case 'v':
 		switch {
 		case s.Flag('+'):
-			println(e.BuildDetail())
+			s.Write([]byte(e.BuildDetail()))
 		case s.Flag('#'):
 			fallthrough
 		default:
-			println(e.Error())
+			s.Write([]byte(e.Error()))
 		}
 	}
 }
