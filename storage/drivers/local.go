@@ -60,6 +60,19 @@ func (l LocalDriver) Put(path string, data []byte) (err error) {
 	return
 }
 
+func (l LocalDriver) Append(path string, data []byte) (err error) {
+	f, err := os.OpenFile(l.root.Concat(path), os.O_WRONLY|os.O_APPEND, l.perm)
+	if err != nil {
+		return
+	}
+	defer func() {
+		_ = f.Close()
+	}()
+
+	_, err = f.Write(data)
+	return
+}
+
 func (l LocalDriver) Get(path string) (data []byte, err error) {
 	f, err := os.Open(l.root.Concat(path))
 	if err != nil {

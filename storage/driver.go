@@ -26,3 +26,7 @@ type DriverCanGetSize interface {
 type DriverHasUrl interface {
 	Url(path string) string
 }
+
+type DriverCanAppend interface {
+	Append(path string, data []byte) (err error)
+}

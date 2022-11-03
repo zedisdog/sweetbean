@@ -28,6 +28,7 @@ type IStorage interface {
 	Url(path string) (string, error)
 	PutFileQuick(file *multipart.FileHeader, directory string) (path string, err error)
 	PutFileBytesQuick(data []byte, ext string, dir string) (path string, err error)
+	Append(path string, data []byte) (err error)
 }
 
 func NewStorage(driver Driver) *Storage {
@@ -157,4 +158,11 @@ func (s Storage) Url(path string) (string, error) {
 		return ss.Url(path), nil
 	}
 	return "", errx.New("driver is not implement interface <DriverHasUrl>")
+}
+
+func (s Storage) Append(path string, data []byte) (err error) {
+	if ss, ok := interface{}(s.driver).(DriverCanAppend); ok {
+		return ss.Append(path, data)
+	}
+	return errx.New("driver is not implement interface <DriverCanAppend>")
 }
