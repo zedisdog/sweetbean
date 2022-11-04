@@ -60,7 +60,11 @@ func CheckSha1(expect string, actual []byte) bool {
 }
 
 func Md5(str string) string {
+	return Md5Bytes([]byte(str))
+}
+
+func Md5Bytes(b []byte) string {
 	h := md5.New()
-	h.Write([]byte(str))
+	h.Write(b)
 	return hex.EncodeToString(h.Sum(nil))
 }
