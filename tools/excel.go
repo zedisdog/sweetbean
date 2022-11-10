@@ -5,6 +5,7 @@ import (
 	"strings"
 )
 
+// ExcelCell 根据行列索引计算坐标 从1开始
 func ExcelCell(col int, row int) string {
 	return fmt.Sprintf("%s%d", ColIndexByNum(col), row)
 }
