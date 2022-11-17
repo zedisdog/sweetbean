@@ -14,6 +14,7 @@ func InSlice[T comparable](x T, s []T) (result int) {
 	return
 }
 
+// GroupSlice group slice to a new slice with each group has same groupCount
 func GroupSlice[T any](s []T, groupCount int) (result [][]T) {
 	result = make([][]T, int(math.Ceil(float64(len(s))/float64(groupCount))))
 	index := 0
