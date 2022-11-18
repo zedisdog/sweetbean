@@ -9,6 +9,7 @@ import (
 // SplitByHeadAndFoot  scanner的分割函数，ctx可以控制退出
 func SplitByHeadAndFoot(ctx context.Context, head, foot []byte) bufio.SplitFunc {
 	return func(data []byte, atEOF bool) (advance int, token []byte, err error) {
+		println(88888)
 		if atEOF && len(data) == 0 {
 			return 0, nil, nil
 		}
