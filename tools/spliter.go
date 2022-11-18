@@ -7,7 +7,7 @@ import (
 
 // SplitByHeadAndFoot 用于scan,参数为开始结束标识
 //
-// Deprecate: use tools/bufio/scan.SplitByHeadAndFoot insead
+// Deprecate: use tools/bufio/scan.SplitByHeadAndFoot instead
 func SplitByHeadAndFoot(head, foot []byte) bufio.SplitFunc {
 	return func(data []byte, atEOF bool) (advance int, token []byte, err error) {
 		if atEOF && len(data) == 0 {
