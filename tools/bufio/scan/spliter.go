@@ -3,11 +3,12 @@ package scan
 import (
 	"bufio"
 	"bytes"
+	"context"
 )
 
-func SplitByHeadAndFoot(head, foot []byte) bufio.SplitFunc {
+// SplitByHeadAndFoot  scanner的分割函数，ctx可以控制退出
+func SplitByHeadAndFoot(ctx context.Context, head, foot []byte) bufio.SplitFunc {
 	return func(data []byte, atEOF bool) (advance int, token []byte, err error) {
-		println(66666)
 		if atEOF && len(data) == 0 {
 			return 0, nil, nil
 		}
@@ -28,7 +29,13 @@ func SplitByHeadAndFoot(head, foot []byte) bufio.SplitFunc {
 		if atEOF {
 			return 0, nil, bufio.ErrFinalToken
 		}
-		// Request more data.
-		return 0, nil, nil
+
+		select {
+		case <-ctx.Done():
+			return 0, nil, bufio.ErrFinalToken
+		default:
+			// Request more data.
+			return 0, nil, nil
+		}
 	}
 }
