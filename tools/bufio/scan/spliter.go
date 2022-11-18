@@ -7,6 +7,7 @@ import (
 
 func SplitByHeadAndFoot(head, foot []byte) bufio.SplitFunc {
 	return func(data []byte, atEOF bool) (advance int, token []byte, err error) {
+		println(66666)
 		if atEOF && len(data) == 0 {
 			return 0, nil, nil
 		}
