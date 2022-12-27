@@ -47,3 +47,8 @@ func (c Json) GetString(name string) (value string, err error) {
 	value = v.(string)
 	return
 }
+
+func (c Json) As(container interface{}) (err error) {
+	err = json.Unmarshal([]byte(c), container)
+	return
+}
